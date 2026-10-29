@@ -7,7 +7,7 @@
 
 CXX      ?= g++
 CXXFLAGS ?= -std=c++17 -O2 -Wall -Wextra -Wpedantic
-FUENTES  := src/main.cpp src/configuracion.cpp src/datos.cpp src/modelo.cpp src/pruebas.cpp
+FUENTES  := src/main.cpp src/configuracion.cpp src/datos.cpp src/modelo.cpp src/escenario.cpp src/salida.cpp src/pruebas.cpp
 CABECERAS:= $(wildcard src/*.hpp)
 
 simulador: $(FUENTES) $(CABECERAS)
