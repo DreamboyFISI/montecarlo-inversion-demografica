@@ -1,0 +1,35 @@
+# Cluster MPI de 4 nodos con Docker Compose (Sprint 3, S10).
+#   docker compose up -d --build                    # construye la imagen y levanta los 4 nodos
+#   ./docker/ejecutar_cluster.sh 8 10000            # mpirun -np 8 sobre los 4 nodos
+#   docker compose down
+# Cada nodo es un contenedor con 2 CPU; nodo1 es el maestro (lanza mpirun y escribe los resultados
+# en ./resultados_cluster del anfitrion).
+x-nodo: &nodo
+  image: montecarlo-demografia:latest
+  cpus: 2
+  networks: [cluster]
+
+services:
+  nodo1:
+    <<: *nodo
+    build:
+      context: ..
+      dockerfile: MonteCarlo_Paralelo/docker/Dockerfile
+    hostname: nodo1
+    volumes:
+      - ./resultados_cluster:/home/mpi/resultados:z
+  nodo2:
+    <<: *nodo
+    hostname: nodo2
+    depends_on: [nodo1]
+  nodo3:
+    <<: *nodo
+    hostname: nodo3
+    depends_on: [nodo1]
+  nodo4:
+    <<: *nodo
+    hostname: nodo4
+    depends_on: [nodo1]
+
+networks:
+  cluster:
