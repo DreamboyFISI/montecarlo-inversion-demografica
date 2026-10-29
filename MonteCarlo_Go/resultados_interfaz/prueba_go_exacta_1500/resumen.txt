@@ -1,0 +1,14 @@
+ESTADO: DEMO_NO_VALIDADO
+Version: Go secuencial, un proceso, un hilo.
+Poblacion inicial: 32706028
+Menores de 15: 7429471
+65 o mas: 3440272
+Escenarios completados: 1500
+Horizonte: 40
+Con inversion: 1492
+Sin inversion: 8
+Probabilidad de inversion: 0.994666666667
+Segundos simulacion: 3.906485200
+Segundos total: 3.915730400
+Memoria pico (MiB): 11.546875
+Primer anio de inversion: minimo 2047, media 2054.459115, maximo 2065

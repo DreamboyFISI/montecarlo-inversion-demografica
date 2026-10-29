@@ -1,0 +1,48 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='900' height='480' viewBox='0 0 900 480' font-family='Arial, Helvetica, sans-serif' font-size='13'>
+<rect width='900' height='480' fill='#ffffff'/>
+<text x='450' y='28' text-anchor='middle' font-size='18' fill='#14213d'>Distribucion del primer anio de inversion p(T = y)</text>
+<text x='450' y='50' text-anchor='middle' fill='#5a6270'>1500 escenarios, horizonte 40 anios, semilla 12345, sigma_fec 0.05, sigma_mort 0.015</text>
+<line x1='70' y1='420.0' x2='870' y2='420.0' stroke='#e5e7eb'/>
+<text x='62' y='424.0' text-anchor='end' fill='#5a6270'>0.000</text>
+<line x1='70' y1='332.5' x2='870' y2='332.5' stroke='#e5e7eb'/>
+<text x='62' y='336.5' text-anchor='end' fill='#5a6270'>0.055</text>
+<line x1='70' y1='245.0' x2='870' y2='245.0' stroke='#e5e7eb'/>
+<text x='62' y='249.0' text-anchor='end' fill='#5a6270'>0.110</text>
+<line x1='70' y1='157.5' x2='870' y2='157.5' stroke='#e5e7eb'/>
+<text x='62' y='161.5' text-anchor='end' fill='#5a6270'>0.166</text>
+<line x1='70' y1='70.0' x2='870' y2='70.0' stroke='#e5e7eb'/>
+<text x='62' y='74.0' text-anchor='end' fill='#5a6270'>0.221</text>
+<line x1='70' y1='420' x2='870' y2='420' stroke='#9aa3b2'/>
+<rect x='114.0' y='417.9' width='32.0' height='2.1' fill='#1f4e79'><title>2048: 2 escenarios (p = 0.0013)</title></rect>
+<rect x='154.0' y='414.7' width='32.0' height='5.3' fill='#1f4e79'><title>2049: 5 escenarios (p = 0.0033)</title></rect>
+<rect x='194.0' y='387.2' width='32.0' height='32.8' fill='#1f4e79'><title>2050: 31 escenarios (p = 0.0207)</title></rect>
+<rect x='234.0' y='321.7' width='32.0' height='98.3' fill='#1f4e79'><title>2051: 93 escenarios (p = 0.0620)</title></rect>
+<rect x='274.0' y='249.9' width='32.0' height='170.1' fill='#1f4e79'><title>2052: 161 escenarios (p = 0.1073)</title></rect>
+<rect x='314.0' y='184.3' width='32.0' height='235.7' fill='#1f4e79'><title>2053: 223 escenarios (p = 0.1487)</title></rect>
+<rect x='354.0' y='115.7' width='32.0' height='304.3' fill='#1f4e79'><title>2054: 288 escenarios (p = 0.1920)</title></rect>
+<rect x='394.0' y='144.2' width='32.0' height='275.8' fill='#1f4e79'><title>2055: 261 escenarios (p = 0.1740)</title></rect>
+<rect x='434.0' y='229.8' width='32.0' height='190.2' fill='#1f4e79'><title>2056: 180 escenarios (p = 0.1200)</title></rect>
+<rect x='474.0' y='294.2' width='32.0' height='125.8' fill='#1f4e79'><title>2057: 119 escenarios (p = 0.0793)</title></rect>
+<rect x='514.0' y='357.7' width='32.0' height='62.3' fill='#1f4e79'><title>2058: 59 escenarios (p = 0.0393)</title></rect>
+<rect x='554.0' y='378.8' width='32.0' height='41.2' fill='#1f4e79'><title>2059: 39 escenarios (p = 0.0260)</title></rect>
+<rect x='594.0' y='408.4' width='32.0' height='11.6' fill='#1f4e79'><title>2060: 11 escenarios (p = 0.0073)</title></rect>
+<rect x='634.0' y='412.6' width='32.0' height='7.4' fill='#1f4e79'><title>2061: 7 escenarios (p = 0.0047)</title></rect>
+<rect x='674.0' y='416.8' width='32.0' height='3.2' fill='#1f4e79'><title>2062: 3 escenarios (p = 0.0020)</title></rect>
+<rect x='714.0' y='415.8' width='32.0' height='4.2' fill='#1f4e79'><title>2063: 4 escenarios (p = 0.0027)</title></rect>
+<rect x='754.0' y='418.9' width='32.0' height='1.1' fill='#1f4e79'><title>2064: 1 escenarios (p = 0.0007)</title></rect>
+<rect x='794.0' y='417.9' width='32.0' height='2.1' fill='#1f4e79'><title>2065: 2 escenarios (p = 0.0013)</title></rect>
+<text x='90.0' y='440' text-anchor='middle' fill='#3e4a5c'>2047</text>
+<text x='170.0' y='440' text-anchor='middle' fill='#3e4a5c'>2049</text>
+<text x='250.0' y='440' text-anchor='middle' fill='#3e4a5c'>2051</text>
+<text x='330.0' y='440' text-anchor='middle' fill='#3e4a5c'>2053</text>
+<text x='410.0' y='440' text-anchor='middle' fill='#3e4a5c'>2055</text>
+<text x='490.0' y='440' text-anchor='middle' fill='#3e4a5c'>2057</text>
+<text x='570.0' y='440' text-anchor='middle' fill='#3e4a5c'>2059</text>
+<text x='650.0' y='440' text-anchor='middle' fill='#3e4a5c'>2061</text>
+<text x='730.0' y='440' text-anchor='middle' fill='#3e4a5c'>2063</text>
+<text x='810.0' y='440' text-anchor='middle' fill='#3e4a5c'>2065</text>
+<text x='470' y='466' text-anchor='middle' fill='#3e4a5c'>Primer anio de inversion T</text>
+<line x1='387.0' y1='70' x2='387.0' y2='420' stroke='#a04a0c' stroke-width='2' stroke-dasharray='6 4'/>
+<text x='395.0' y='88' fill='#a04a0c'>media 2054.4, sd 2.3 anios</text>
+<text x='870' y='88' text-anchor='end' fill='#5a6270'>1489 de 1500 escenarios con inversion</text>
+</svg>

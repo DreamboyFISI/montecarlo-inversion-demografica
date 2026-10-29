@@ -1,0 +1,2 @@
+version,procesos,hilos,escenarios,horizonte,segundos_carga,segundos_simulacion,segundos_total,segundos_cpu,ms_por_escenario,escenarios_por_segundo,escenario_anios_por_segundo,memoria_pico_mib
+secuencial,1,1,1,40,0.0244127,0.0029568,0.0356379,0.048,2.9568,338.203463,13528.1385,0

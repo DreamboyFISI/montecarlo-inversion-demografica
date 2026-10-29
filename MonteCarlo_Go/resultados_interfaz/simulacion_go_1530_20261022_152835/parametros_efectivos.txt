@@ -1,0 +1,9 @@
+estado_datos=DEMO_NO_VALIDADO
+anio_base=2025
+horizonte=40
+escenarios=1530
+semilla=12345
+tipo_mortalidad=supervivencia_intervalo
+sigma_fecundidad=0.05
+sigma_mortalidad=0.015
+Version Go secuencial; aproximacion normal binomial para poblaciones grandes.

@@ -1,0 +1,11 @@
+estado_datos=DEMO_NO_VALIDADO
+anio_base=2025
+horizonte=40
+escenarios=1600
+semilla=12345
+tipo_mortalidad=supervivencia_intervalo
+sigma_fecundidad=0.05
+sigma_mortalidad=0.015
+q100 desde configuracion; fila100 del CSV no aplicada
+Desagregacion uniforme entera; mortalidad constante en el tiempo
+Biblioteca C++: reproducibilidad exacta solo con mismo ejecutable/entorno

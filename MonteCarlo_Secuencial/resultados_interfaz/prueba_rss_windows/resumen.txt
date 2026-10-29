@@ -1,0 +1,33 @@
+ESTADO: DEMO_NO_VALIDADO
+Ejecucion ilustrativa con supuestos no confirmados. No es una prediccion validada del Peru.
+Version: C++17 secuencial, un proceso, un hilo.
+Poblacion inicial: 32706028
+Menores de 15: 7429471
+65 o mas: 3440272
+Escenarios completados: 10
+Horizonte: 40
+Con inversion: 10
+Sin inversion: 0
+Probabilidad de inversion: 1
+Probabilidad sin inversion: 0
+Primer anio de inversion (escenarios con inversion): minimo 2053, media 2055.8, maximo 2059
+Segundos simulacion y escritura de escenarios: 0.0296434
+Segundos hasta resumen: 0.0397698
+--- Metricas de rendimiento (linea base secuencial, T1) ---
+Procesos x hilos: 1 x 1
+Segundos carga de datos: 0.002231
+Segundos simulacion y escritura de escenarios: 0.029643
+Segundos hasta resumen (T1 total): 0.039770
+Segundos de CPU del proceso: 0.043000
+Milisegundos por escenario: 2.964340
+Escenarios por segundo: 337.343220
+Escenario-anios por segundo: 13493.728790
+Memoria pico (MiB): 5.332031
+--- Distribucion del primer anio de inversion p(T = y) ---
+2053         1  0.1000  #############
+2054         1  0.1000  #############
+2055         2  0.2000  ###########################
+2056         3  0.3000  ########################################
+2057         2  0.2000  ###########################
+2059         1  0.1000  #############
+Media 2055.80, desviacion 1.60 anios, rango 2053-2059; sin inversion: 0 de 10 (0.00 %)

@@ -1,0 +1,45 @@
+ESTADO: DEMO_NO_VALIDADO
+Ejecucion ilustrativa con supuestos no confirmados. No es una prediccion validada del Peru.
+Version: C++17 secuencial, un proceso, un hilo.
+Poblacion inicial: 32706028
+Menores de 15: 7429471
+65 o mas: 3440272
+Escenarios completados: 5000
+Horizonte: 40
+Con inversion: 4959
+Sin inversion: 41
+Probabilidad de inversion: 0.9918
+Probabilidad sin inversion: 0.0082
+Primer anio de inversion (escenarios con inversion): minimo 2048, media 2054.47529744, maximo 2065
+Segundos simulacion y escritura de escenarios: 10.6385052
+Segundos hasta resumen: 10.6496095
+--- Metricas de rendimiento (linea base secuencial, T1) ---
+Procesos x hilos: 1 x 1
+Segundos carga de datos: 0.001370
+Segundos simulacion y escritura de escenarios: 10.638505
+Segundos hasta resumen (T1 total): 10.649610
+Segundos de CPU del proceso: 10.652000
+Milisegundos por escenario: 2.127701
+Escenarios por segundo: 469.990840
+Escenario-anios por segundo: 18799.633618
+Memoria pico (MiB): 5.300781
+--- Distribucion del primer anio de inversion p(T = y) ---
+2048         5  0.0010  
+2049        26  0.0052  #
+2050        93  0.0186  ####
+2051       276  0.0552  ############
+2052       511  0.1022  ######################
+2053       799  0.1598  ##################################
+2054       930  0.1860  ########################################
+2055       829  0.1658  ####################################
+2056       643  0.1286  ############################
+2057       401  0.0802  #################
+2058       213  0.0426  #########
+2059       130  0.0260  ######
+2060        55  0.0110  ##
+2061        20  0.0040  #
+2062        11  0.0022  
+2063        12  0.0024  #
+2064         3  0.0006  
+2065         2  0.0004  
+Media 2054.48, desviacion 2.26 anios, rango 2048-2065; sin inversion: 41 de 5000 (0.82 %)
