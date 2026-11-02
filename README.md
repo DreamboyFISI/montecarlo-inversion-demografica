@@ -15,7 +15,8 @@ Proyecto del curso Programación Paralela y Concurrente. Abordamos la paraleliza
 7. [Incertidumbre macro por escenario](#incertidumbre-macro-por-escenario)
 8. [Métricas de rendimiento](#métricas-de-rendimiento)
 9. [Versión Go](#versión-go)
-10. [Documentación Scrum](#documentación-scrum)
+10. [Clustering de escenarios (S13)](#clustering-de-escenarios-s13)
+11. [Documentación Scrum](#documentación-scrum)
 
 ## Estructura del repositorio
 
@@ -52,6 +53,7 @@ Proyecto del curso Programación Paralela y Concurrente. Abordamos la paraleliza
 | `MonteCarlo_Paralelo/docker-compose.yml`, `hostfile` | Clúster MPI de 4 nodos (contenedores) con 2 CPU cada uno | S10 |
 | `MonteCarlo_Paralelo/docker/ejecutar_cluster.sh` | Lanza `mpirun` en el clúster; resultados en `resultados_cluster/` | S10 |
 | `MonteCarlo_Go/` | Implementación secuencial alternativa en Go | extra |
+| `MonteCarlo_Clustering/` | Segmentación de escenarios (K-Means, Ward, DBSCAN) y perfiles de edad con métricas y gráficos | S13 |
 
 ## Inicio rápido con Docker
 
@@ -291,6 +293,29 @@ go build -o simulador_go.exe ./cmd/simulador
 
 Usa las mismas ecuaciones demográficas, distribuciones Poisson y binomial exactas y formatos de salida. Go y C++ usan generadores y algoritmos aleatorios diferentes, así que los escenarios individuales no coinciden byte a byte. La comparación debe hacerse sobre la distribución agregada.
 
+## Clustering de escenarios (S13)
+
+Módulo de segmentación de los 10 000 escenarios con incertidumbre macro y de perfiles de edad simple en regímenes demográficos.
+
+```bash
+# Instalar dependencias
+pip install -r MonteCarlo_Clustering/requirements.txt
+
+# Clustering de escenarios (Parte A)
+python3 MonteCarlo_Clustering/scripts/clustering_escenarios.py \
+    MonteCarlo_Secuencial/resultados_incertidumbre MonteCarlo_Clustering/resultados_clustering \
+    --carpeta-graficos MonteCarlo_Clustering/graficos_clustering
+
+# Clustering de perfiles de edades simples (Parte B)
+python3 MonteCarlo_Clustering/scripts/clustering_edades.py \
+    MonteCarlo_Secuencial/datos_procesados MonteCarlo_Clustering/resultados_edades \
+    --carpeta-graficos MonteCarlo_Clustering/graficos_edades
+```
+
+- La carpeta de salida debe ser nueva: el script no sobrescribe resultados existentes.
+- Resultados y métricas en `MonteCarlo_Clustering/resultados_clustering/` y `resultados_edades/`.
+- Documento técnico y metodológico en `docs/06_clustering.md`.
+
 ## Documentación Scrum
 
 | Documento | Semana |
@@ -300,3 +325,4 @@ Usa las mismas ecuaciones demográficas, distribuciones Poisson y binomial exact
 | `docs/03_validacion_linea_base.md`: verificación, coherencia estadística, convergencia Monte Carlo y T1 | S9 |
 | `docs/04_sprint3_paralelizacion.md`: análisis de Foster, OpenMP, MPI, Docker, verificación y rendimiento | S10 |
 | `docs/05_registro_scrum.md`: Sprint Planning y Review de los sprints 1–3 | S4–S10 |
+| `docs/06_clustering.md`: clustering de escenarios (K-Means, Hierarchical, DBSCAN), perfiles de edad, análisis de sensibilidad y estabilidad | S13 |

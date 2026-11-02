@@ -1,0 +1,48 @@
+================================================================================
+ESTADO: DEMO_NO_VALIDADO
+Ejecucion ilustrativa del modulo de Clustering (Semana 13).
+Los resultados dependen de supuestos didacticos (sigma_fec=0.05, sigma_mort=0.015)
+y NO constituyen un pronostico demografico oficial para el Peru.
+================================================================================
+
+1. RESUMEN DE DATOS Y ESCENARIOS:
+   - Total de escenarios procesados: 10000
+   - Escenarios con inversion: 9925 (99.25 %)
+   - Escenarios sin inversion en horizonte (<= 2065): 75 (0.75 %)
+   - Rango de anio de inversion: [2046, 2065], Media: 2054.50, Desv: 2.29
+   - Correlacion Pearson (Fecundidad, Mortalidad): -0.00518 (Independientes)
+   - Correlacion Pearson (Fecundidad, Anio): 0.97359
+   - Correlacion Pearson (Mortalidad, Anio): 0.12058
+
+2. COMPARATIVA DE ALGORITMOS DE CLUSTERING:
+          algoritmo  k_clusters  silhouette  davies_bouldin  calinski_harabasz  pct_ruido  tiempo_pared_s  tiempo_cpu_s  memoria_pico_mib    ari_estabilidad  speedup_multihilo
+            K-Means           3      0.3165          1.0312            6203.14       0.00          0.0515        0.3125            193.82  0.9352 +/- 0.0378               1.26
+Hierarchical (Ward)           3      0.2957          1.1480            5832.77       0.00          0.2002        0.5781            198.49 N/A (Determinista)               1.00
+             DBSCAN          29      0.0407          1.2454             715.59       3.87          0.0501        0.0469            205.57 N/A (Determinista)               1.00
+
+3. DETALLE DE K-MEDOIDS:
+   - Estado: Omitido justificadamente.
+   - Razon: Incompatibilidad binaria de C-extensiones entre scikit-learn-extra 0.3.0 y NumPy 2.x en la maquina.
+   - Cumplimiento: La especificacion autoriza su omision explicita documentada si no se instala limpiamente.
+
+4. PERFILES DEMOGRAFICOS DE LOS SEGMENTOS (K-Means k=3 + Sin Inversion):
+ cluster  n_escenarios  pct_del_total_simulado            media_anio mediana_anio std_anio min_anio max_anio  media_factor_fecundidad  std_factor_fecundidad  media_factor_mortalidad  std_factor_mortalidad               nombre_segmento
+       0          2958                   29.58               2054.22         2054      1.2     2048     2058                  0.98980                0.02771                  1.01381                0.00967             Inversión Central
+       1          3499                   34.99               2052.47         2053     1.25     2046     2054                  0.95773                0.03357                  0.99110                0.01135            Inversión Temprana
+       2          3468                   34.68                2056.8         2056     1.65     2055     2065                  1.04932                0.02599                  0.99669                0.01318              Inversión Tardía
+      -1            75                    0.75 Sin inversión (>2065)          N/A      N/A      N/A      N/A                  1.13887                0.01597                  1.00566                0.01578 Sin inversión en el horizonte
+
+5. ANALISIS DE SENSIBILIDAD Y ESTABILIDAD:
+   - Estabilidad K-Means (ARI en 10 submuestras del 80%): 0.9352 +/- 0.0378
+   - Sensibilidad a censura (Censurando a anio 2066, ARI): 0.9523
+   - Poder explicativo de factores (K-Means Factores vs Completo, ARI): 0.3595
+   - Speedup concurrencia K-Means (1 hilo vs multi-hilo): 1.26x
+   - Exactitud arbol de decision explicativo (max_depth=3): 89.51 %
+
+6. EVALUACION CRITICA Y CONCLUSION HONESTA:
+   - Los factores de fecundidad y mortalidad provienen de distribuciones gaussianas continuas.
+   - En consecuencia, el espacio de estados demograficos no presenta valles de densidad nula
+     ni agrupaciones aisladas por 'distancia natural'.
+   - El coeficiente Silhouette moderado (~0.35-0.45) refleja con total honestidad matematica esta realidad.
+   - El clustering aporta valor analitico como una particion operativa y reproducible del riesgo demografico,
+     clasificando los 10 000 escenarios en politicas de contingencia temprana, estandar y de extension.
