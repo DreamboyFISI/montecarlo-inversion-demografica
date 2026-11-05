@@ -75,6 +75,13 @@ def duracion_legible(segundos: float) -> str:
     return f"{segundos / 3600:.1f} h"
 
 
+def ruta_a_wsl(p: Path) -> str:
+    res = p.resolve().as_posix()
+    if len(res) >= 2 and res[1] == ':':
+        return f"/mnt/{res[0].lower()}{res[2:]}"
+    return res
+
+
 class InterfazMonteCarlo(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
@@ -513,19 +520,6 @@ class InterfazMonteCarlo(tk.Tk):
                            ("\nAdvertencia: supera los 100 000 escenarios." if n > 100_000 else ""))
         self.aviso.configure(fg=NARANJA if n > 100_000 else GRIS)
 
-    def _buscar_ejecutable(self, motor: str) -> Path | None:
-        if motor == "Go":
-            candidatos = [GO_BASE / "simulador_go.exe", GO_BASE / "simulador_go"]
-        elif motor == "C++ OpenMP":
-            candidatos = [PARALELO_BASE / "simulador_omp.exe", PARALELO_BASE / "simulador_omp"]
-        elif motor == "C++ MPI":
-            candidatos = [PARALELO_BASE / "simulador_mpi.exe", PARALELO_BASE / "simulador_mpi"]
-        elif motor == "C++ Híbrido (MPI+OpenMP)":
-            candidatos = [PARALELO_BASE / "simulador_hibrido.exe", PARALELO_BASE / "simulador_hibrido"]
-        else:
-            candidatos = [BASE / "simulador.exe", BASE / "simulador"] if sys.platform == "win32" else [BASE / "simulador", BASE / "simulador.exe"]
-        return next((p for p in candidatos if p.is_file()), None)
-
     def ejecutar(self) -> None:
         try:
             escenarios = entero_positivo(self.escenarios_var.get())
@@ -534,44 +528,62 @@ class InterfazMonteCarlo(tk.Tk):
             return
 
         motor = self.motor_var.get()
-        ejecutable = self._buscar_ejecutable(motor)
-        if ejecutable is None:
-            # Fallback a secuencial si el paralelo no esta compilado en Windows
-            fallback = self._buscar_ejecutable("C++ Secuencial")
-            if fallback is not None and motor.startswith("C++"):
-                if messagebox.askyesno("Ejecutable no encontrado",
-                                       f"No se encontró el ejecutable compilado para '{motor}'.\n"
-                                       f"¿Desea ejecutar la simulación con la versión C++ Secuencial en su lugar?"):
-                    ejecutable = fallback
-                    motor = "C++ Secuencial"
-                else:
-                    return
-            else:
-                messagebox.showerror("Ejecutable no encontrado", f"No se encontró ejecutable para {motor}.")
-                return
-
-        motor_base = GO_BASE if motor == "Go" else (PARALELO_BASE if "OpenMP" in motor or "MPI" in motor else BASE)
         config = BASE / self.config_var.get()
         if not config.exists():
             messagebox.showerror("Configuración", f"No existe {config.name}.")
             return
 
+        slug = motor.replace(" ", "_").replace("+", "p").replace("(", "").replace(")", "").replace("í", "i")
         marca = datetime.now().strftime("%Y%m%d_%H%M%S")
-        salida_relativa = Path("resultados_interfaz") / f"sim_{escenarios}_{marca}"
-        salida = BASE / salida_relativa
+        salida_rel = Path("resultados_interfaz") / f"sim_{slug}_{escenarios}_{marca}"
 
-        # Comando segun sea MPI o directo
-        if "MPI" in motor:
-            comando = ["mpirun", "-np", "2", str(ejecutable), "--config", str(config), "--datos", str(BASE / "datos"),
-                       "--salida", str(salida), "--escenarios", str(escenarios)]
+        if motor == "Go":
+            ejecutable = GO_BASE / "simulador_go.exe" if sys.platform == "win32" else GO_BASE / "simulador_go"
+            if not ejecutable.is_file():
+                messagebox.showerror("Ejecutable no encontrado", f"No se encontró {ejecutable}.\nCompile desde MonteCarlo_Go con:\ngo build -o simulador_go.exe ./cmd/simulador")
+                return
+            salida = GO_BASE / salida_rel
+            comando = [str(ejecutable), "--config", config.name, "--datos", "datos", "--salida", str(salida_rel), "--escenarios", str(escenarios)]
+            cwd = GO_BASE
+
+        elif motor == "C++ Secuencial":
+            ejecutable = BASE / "simulador.exe" if sys.platform == "win32" else BASE / "simulador"
+            if not ejecutable.is_file():
+                messagebox.showerror("Ejecutable no encontrado", f"No se encontró {ejecutable}.\nCompile desde MonteCarlo_Secuencial con g++.")
+                return
+            salida = BASE / salida_rel
+            comando = [str(ejecutable), "--config", config.name, "--datos", "datos", "--salida", str(salida_rel), "--escenarios", str(escenarios)]
+            cwd = BASE
+
         else:
-            comando = [str(ejecutable), "--config", str(config), "--datos", str(BASE / "datos"),
-                       "--salida", str(salida), "--escenarios", str(escenarios)]
+            # Versiones paralelas: C++ OpenMP, C++ MPI, C++ Híbrido (MPI+OpenMP)
+            salida = BASE / salida_rel
+            cfg_wsl = f"../MonteCarlo_Secuencial/{config.name}"
+            datos_wsl = f"../MonteCarlo_Secuencial/datos"
+            salida_wsl = ruta_a_wsl(salida)
+            paralelo_wsl = ruta_a_wsl(PARALELO_BASE)
+
+            if motor == "C++ OpenMP":
+                cmd_wsl = f"cd {paralelo_wsl} && ./simulador_omp --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl} --escenarios {escenarios} --hilos 4"
+            elif motor == "C++ MPI":
+                cmd_wsl = f"cd {paralelo_wsl} && mpirun --oversubscribe -np 2 ./simulador_mpi --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl} --escenarios {escenarios}"
+            elif motor == "C++ Híbrido (MPI+OpenMP)":
+                cmd_wsl = f"cd {paralelo_wsl} && mpirun --oversubscribe -np 2 ./simulador_hibrido --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl} --escenarios {escenarios} --hilos 2"
+            else:
+                messagebox.showerror("Error", f"Motor desconocido: {motor}")
+                return
+
+            # En Windows se invoca a traves de WSL de forma completamente transparente
+            if sys.platform == "win32":
+                comando = ["wsl", "bash", "-c", cmd_wsl]
+            else:
+                comando = ["bash", "-c", cmd_wsl]
+            cwd = BASE
 
         self.ejecutar_btn.state(["disabled"])
         self.progreso.start(12)
         self.estado_var.set(f"Ejecutando {escenarios:,} escenarios con {motor}...")
-        threading.Thread(target=self._ejecutar_hilo, args=(comando, salida, BASE), daemon=True).start()
+        threading.Thread(target=self._ejecutar_hilo, args=(comando, salida, cwd), daemon=True).start()
 
     def _ejecutar_hilo(self, comando: list[str], salida: Path, cwd: Path) -> None:
         try:
