@@ -39,7 +39,7 @@ Prioridad: 1 = más alta. Estimación en puntos de historia (Fibonacci). El esta
 | PB-05 | Como evaluador, quiero pruebas con resultado conocido y una línea base T1 medida para validar el modelo y comparar el speedup | 1 | 5 | 2 | S9 | Hecho |
 | PB-06 | Como usuario, quiero una versión OpenMP que reparta los escenarios entre hilos con los mismos resultados que la secuencial | 1 | 5 | 3 | S10 | Hecho |
 | PB-07 | Como usuario, quiero una versión MPI ejecutable en un clúster de contenedores Docker con los mismos resultados que la secuencial | 1 | 8 | 3 | S10 | Hecho |
-| PB-08 | Como usuario, quiero una versión híbrida MPI + OpenMP (procesos entre nodos, hilos dentro de cada nodo) | 1 | 5 | 3 | S11 | Pendiente |
+| PB-08 | Como usuario, quiero una versión híbrida MPI + OpenMP (procesos entre nodos, hilos dentro de cada nodo) | 1 | 5 | 3 | S11 | Hecho (simulador_hibrido) |
 | PB-09 | Como investigador, quiero ejecutar 10 millones de escenarios y obtener la distribución del año de inversión | 1 | 5 | 3 | S12 | Pendiente |
 | PB-10 | Como evaluador, quiero un análisis de resultados y de rendimiento (speedup, eficiencia, Karp-Flatt, Amdahl) | 2 | 5 | 4 | S13 | Pendiente (S10 deja el script y la primera medición) |
 | PB-11 | Como docente, quiero un informe final con correcciones | 2 | 5 | 4 | S13–S14 | Pendiente |
