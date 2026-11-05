@@ -1,9 +1,5 @@
 REGLAS DE DECISION EXPLICATIVAS (Surrogate Decision Tree)
-<<<<<<< HEAD
 ESTADO: PARAMETROS_CONFIGURADOS (Supuestos didacticos)
-=======
-ESTADO: DEMO_NO_VALIDADO (Supuestos didacticos)
->>>>>>> origin/develop
 Objetivo: Explicar clusters de inversion demografica segun factores macro
 Exactitud global del arbol (Accuracy): 89.51 %
 --------------------------------------------------------------------------------

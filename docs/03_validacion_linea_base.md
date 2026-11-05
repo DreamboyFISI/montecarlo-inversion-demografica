@@ -30,11 +30,7 @@ Es compatible con una Poisson bien muestreada.
 - Con incertidumbre macro (σ_f = 0,05 y σ_m = 0,015) aparece una distribución unimodal centrada en 2054.
 - El aviso de V1 (cohorte 0–4 menor de lo que implica la fecundidad) produce un repunte de menores de 15 hacia 2036–2040. Es un efecto conocido de los datos, no del código.
 
-<<<<<<< HEAD
 **Pendiente (fuera del alcance del código):** contrastar 2054 con la proyección oficial (INEI / CELADE / ONU WPP) y calibrar σ_f y σ_m con la dispersión entre sus variantes alta, media y baja. Mientras tanto, los resultados conservan el estado `PARAMETROS_CONFIGURADOS`.
-=======
-**Pendiente (fuera del alcance del código):** contrastar 2054 con la proyección oficial (INEI / CELADE / ONU WPP) y calibrar σ_f y σ_m con la dispersión entre sus variantes alta, media y baja. Mientras tanto, los resultados conservan el estado `DEMO_NO_VALIDADO`.
->>>>>>> origin/develop
 
 ## 3. Convergencia Monte Carlo
 
