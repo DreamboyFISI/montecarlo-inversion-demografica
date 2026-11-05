@@ -1,5 +1,9 @@
 ================================================================================
+<<<<<<< HEAD
 ESTADO: PARAMETROS_CONFIGURADOS
+=======
+ESTADO: DEMO_NO_VALIDADO
+>>>>>>> origin/develop
 Clustering de Edades Simples (Parte B - Semana 13)
 ================================================================================
 

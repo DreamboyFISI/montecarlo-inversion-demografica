@@ -9,7 +9,11 @@ mortalidad (q por sexo), fecundidad especifica y proporcion poblacional.
 Evalua si los conglomerados naturales reproducen los cortes oficiales de
 J (<15) y A (>=65).
 
+<<<<<<< HEAD
 ESTADO DE LOS DATOS: PARAMETROS_CONFIGURADOS.
+=======
+ESTADO DE LOS DATOS: DEMO_NO_VALIDADO.
+>>>>>>> origin/develop
 """
 
 import sys
@@ -154,7 +158,11 @@ def main():
 
     print("================================================================================")
     print("CLUSTERING DE EDADES SIMPLES DEMOGRAFICAS (Parte B - S13)")
+<<<<<<< HEAD
     print("ESTADO: PARAMETROS_CONFIGURADOS")
+=======
+    print("ESTADO: DEMO_NO_VALIDADO")
+>>>>>>> origin/develop
     print(f"Carpeta entrada:  {carpeta_datos}")
     print(f"Carpeta salida:   {carpeta_salida}")
     print(f"Carpeta graficos: {carpeta_graficos}")
@@ -292,7 +300,11 @@ def main():
     ax4.legend(loc="upper left", fontsize=8)
     ax4.grid(True, linestyle="--", alpha=0.5)
 
+<<<<<<< HEAD
     plt.suptitle("01. Perfiles Demográficos y Asignación de Conglomerados por Edad", fontsize=12, fontweight='bold')
+=======
+    plt.suptitle("01. Perfiles Demográficos y Asignación de Conglomerados por Edad\n[DEMO_NO_VALIDADO]", fontsize=12, fontweight='bold')
+>>>>>>> origin/develop
     plt.tight_layout()
     plt.savefig(os.path.join(carpeta_graficos, "01_perfiles_demograficos_edad.png"), dpi=300)
     plt.close()
@@ -300,7 +312,11 @@ def main():
     # Fig 02: Dendrograma
     plt.figure(figsize=(10, 5))
     dendrogram(Z, labels=df["edad_num"].values, leaf_rotation=90., leaf_font_size=6.)
+<<<<<<< HEAD
     plt.title("02. Dendrograma Jerárquico de Edades Simples (Ward)", fontsize=12, fontweight='bold')
+=======
+    plt.title("02. Dendrograma Jerárquico de Edades Simples (Ward)\n[DEMO_NO_VALIDADO]", fontsize=12, fontweight='bold')
+>>>>>>> origin/develop
     plt.xlabel("Edad Simple (0 a 100)")
     plt.ylabel("Distancia de enlace Ward")
     plt.tight_layout()
@@ -317,7 +333,11 @@ def main():
     plt.scatter(edades, y_kmeans, marker='o', s=30, label="Clusters K-Means Hallados", alpha=0.8)
     plt.axvline(x=15, color='gray', linestyle='--', label='Corte Oficial 15 años')
     plt.axvline(x=65, color='black', linestyle=':', label='Corte Oficial 65 años')
+<<<<<<< HEAD
     plt.title(f"03. Comparación entre Partición Oficial y Grupos Naturales (ARI = {ari_km:.4f})", fontsize=11, fontweight='bold')
+=======
+    plt.title(f"03. Comparación entre Partición Oficial y Grupos Naturales (ARI = {ari_km:.4f})\n[DEMO_NO_VALIDADO]", fontsize=11, fontweight='bold')
+>>>>>>> origin/develop
     plt.xlabel("Edad Simple")
     plt.yticks([0, 1, 2], ["Grupo 0", "Grupo 1", "Grupo 2"])
     plt.legend(loc="center right", fontsize=9)
@@ -330,7 +350,11 @@ def main():
     resumen_path = os.path.join(carpeta_salida, "resumen_clustering_edades.txt")
     with open(resumen_path, "w", encoding="utf-8") as f:
         f.write("================================================================================\n")
+<<<<<<< HEAD
         f.write("ESTADO: PARAMETROS_CONFIGURADOS\n")
+=======
+        f.write("ESTADO: DEMO_NO_VALIDADO\n")
+>>>>>>> origin/develop
         f.write("Clustering de Edades Simples (Parte B - Semana 13)\n")
         f.write("================================================================================\n\n")
         f.write("1. EVALUACION DE CONCORDANCIA CON CORTES OFICIALES:\n")

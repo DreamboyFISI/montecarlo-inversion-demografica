@@ -2,7 +2,11 @@
 
 Proyecto del curso Programación Paralela y Concurrente. Abordamos la paralelización de una simulación Monte Carlo de la inversión demográfica del Perú: el año en que la población de 65 o más años (A) supera a la de menores de 15 (J).
 
+<<<<<<< HEAD
 **Estado de los datos: PARAMETROS_CONFIGURADOS.** Falta la ficha técnica de los CSV y la confirmación de algunos supuestos. Los resultados dependen de esos supuestos y no son un pronóstico oficial.
+=======
+**Estado de los datos: DEMO_NO_VALIDADO.** Falta la ficha técnica de los CSV y la confirmación de algunos supuestos. Los resultados dependen de esos supuestos y no son un pronóstico oficial.
+>>>>>>> origin/develop
 
 ## Contenido
 

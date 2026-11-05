@@ -90,8 +90,13 @@ void escribir_resultados(const fs::path& salida, const Configuracion& c, const P
     // ---------------- Resumen ----------------
     std::ofstream res(salida / "resumen.txt");
     res << std::setprecision(12) << "ESTADO: " << c.estado_datos << "\n";
+<<<<<<< HEAD
     if (c.estado_datos == "PARAMETROS_CONFIGURADOS")
         res << "Resultados de uso academico basados en los parametros configurados.\n";
+=======
+    if (c.estado_datos == "DEMO_NO_VALIDADO")
+        res << "Ejecucion ilustrativa con supuestos no confirmados. No es una prediccion validada del Peru.\n";
+>>>>>>> origin/develop
     res << "Version: " << version_texto << "\n"
         << "Poblacion inicial: " << poblacion_total(N0) << "\nMenores de 15: " << menores_15(N0)
         << "\n65 o mas: " << mayores_65(N0) << "\nEscenarios completados: " << c.escenarios
