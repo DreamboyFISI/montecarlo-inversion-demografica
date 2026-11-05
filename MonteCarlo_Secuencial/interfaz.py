@@ -18,6 +18,7 @@ import csv
 import math
 import os
 import queue
+import shlex
 import subprocess
 import sys
 import threading
@@ -93,6 +94,8 @@ class InterfazMonteCarlo(tk.Tk):
         self.resultados: list[dict[str, str]] = []
         self.intervalos: list[tuple[int, int, int, float]] = []
         self.carpeta_actual: Path | None = None
+        self.version_actual = ""
+        self.escenarios_actual = 0
         self.proceso: subprocess.Popen[str] | None = None
         self.cola: queue.Queue[tuple[str, object]] = queue.Queue()
 
@@ -151,7 +154,11 @@ class InterfazMonteCarlo(tk.Tk):
         badge_frame.pack(side="right", padx=10)
         tk.Label(
             badge_frame,
+<<<<<<< HEAD
+            text="SIMULACIÓN DEMOGRÁFICA",
+=======
             text="ESTADO: DEMO_NO_VALIDADO",
+>>>>>>> origin/develop
             bg="#FFF3E0",
             fg="#E65100",
             font=("Segoe UI Semibold", 9),
@@ -271,7 +278,11 @@ class InterfazMonteCarlo(tk.Tk):
         tk.Label(principal, textvariable=self.intervalos_var, bg="#E1F5FE", fg=TEXTO, anchor="w", padx=10, pady=5, font=("Segoe UI", 8)).pack(fill="x", pady=(2, 6))
 
         # Tarjetas de metricas inferiores
+<<<<<<< HEAD
+        tarjetas = ttk.Frame(principal, padding=(0, 0, 0, 6))
+=======
         tarjetas = ttk.Frame(padre, padding=(10, 0, 10, 10))
+>>>>>>> origin/develop
         tarjetas.pack(fill="x")
         nombres = ["Escenarios", "Tiempo total", "ms / escenario", "Rendimiento", "CPU / pared", "RSS pico"]
         self.metricas_vars: dict[str, tk.StringVar] = {}
@@ -444,6 +455,8 @@ class InterfazMonteCarlo(tk.Tk):
         cont.bind("<Configure>", lambda _e: lienzo_s.configure(scrollregion=lienzo_s.bbox("all")))
         lienzo_s.bind("<Configure>", lambda e: lienzo_s.itemconfigure(ventana_s, width=e.width))
 
+<<<<<<< HEAD
+=======
         # Tarjeta de estado de los datos
         t_alerta = tk.Frame(cont, bg="#FFF8E1", bd=1, relief="solid", padx=14, pady=10)
         t_alerta.pack(fill="x", pady=(0, 12))
@@ -454,6 +467,7 @@ class InterfazMonteCarlo(tk.Tk):
                  "sobre un horizonte de 40 años (2025–2065). No constituyen una predicción oficial del INEI ni de la ONU.",
             bg="#FFF8E1", fg=TEXTO, font=("Segoe UI", 9), wraplength=950, justify="left"
         ).pack(anchor="w", pady=(3, 0))
+>>>>>>> origin/develop
 
         # Tarjeta de Cronograma Scrum
         t_scrum = ttk.Frame(cont, style="Card.TFrame", padding=14)
@@ -546,9 +560,18 @@ class InterfazMonteCarlo(tk.Tk):
             messagebox.showerror("Configuración", f"No existe {config.name}.")
             return
 
+<<<<<<< HEAD
+        codigos = {
+            "C++ Secuencial": "sec", "C++ OpenMP": "omp", "C++ MPI": "mpi",
+            "C++ Híbrido (MPI+OpenMP)": "hib", "Go": "go",
+        }
+        marca = datetime.now().strftime("%m%d_%H%M%S_%f")[:18]
+        salida_rel = Path("resultados_interfaz") / f"r_{codigos.get(motor, 'sim')}_{escenarios}_{marca}"
+=======
         slug = motor.replace(" ", "_").replace("+", "p").replace("(", "").replace(")", "").replace("í", "i")
         marca = datetime.now().strftime("%Y%m%d_%H%M%S")
         salida_rel = Path("resultados_interfaz") / f"sim_{slug}_{escenarios}_{marca}"
+>>>>>>> origin/develop
 
         if motor == "Go":
             ejecutable = GO_BASE / "simulador_go.exe" if sys.platform == "win32" else GO_BASE / "simulador_go"
@@ -575,6 +598,17 @@ class InterfazMonteCarlo(tk.Tk):
             datos_wsl = f"../MonteCarlo_Secuencial/datos"
             salida_wsl = ruta_a_wsl(salida)
             paralelo_wsl = ruta_a_wsl(PARALELO_BASE)
+<<<<<<< HEAD
+            cd_wsl = shlex.quote(paralelo_wsl)
+            salida_wsl_q = shlex.quote(salida_wsl)
+
+            if motor == "C++ OpenMP":
+                cmd_wsl = f"cd {cd_wsl} && ./simulador_omp --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl_q} --escenarios {escenarios} --hilos 8"
+            elif motor == "C++ MPI":
+                cmd_wsl = f"cd {cd_wsl} && mpirun --oversubscribe -np 4 ./simulador_mpi --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl_q} --escenarios {escenarios}"
+            elif motor == "C++ Híbrido (MPI+OpenMP)":
+                cmd_wsl = f"cd {cd_wsl} && mpirun --oversubscribe -np 2 ./simulador_hibrido --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl_q} --escenarios {escenarios} --hilos 4"
+=======
 
             if motor == "C++ OpenMP":
                 cmd_wsl = f"cd {paralelo_wsl} && ./simulador_omp --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl} --escenarios {escenarios} --hilos 8"
@@ -582,13 +616,20 @@ class InterfazMonteCarlo(tk.Tk):
                 cmd_wsl = f"cd {paralelo_wsl} && mpirun --oversubscribe -np 4 ./simulador_mpi --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl} --escenarios {escenarios}"
             elif motor == "C++ Híbrido (MPI+OpenMP)":
                 cmd_wsl = f"cd {paralelo_wsl} && mpirun --oversubscribe -np 2 ./simulador_hibrido --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl} --escenarios {escenarios} --hilos 4"
+>>>>>>> origin/develop
             else:
                 messagebox.showerror("Error", f"Motor desconocido: {motor}")
                 return
 
             # En Windows se invoca a traves de WSL de forma completamente transparente
             if sys.platform == "win32":
+<<<<<<< HEAD
+                # Ubuntu contiene g++, OpenMP y OpenMPI. No se usa la distro
+                # predeterminada porque Docker Desktop puede ocupar ese lugar.
+                comando = ["wsl", "-d", "Ubuntu", "--", "bash", "-lc", cmd_wsl]
+=======
                 comando = ["wsl", "bash", "-c", cmd_wsl]
+>>>>>>> origin/develop
             else:
                 comando = ["bash", "-c", cmd_wsl]
             cwd = BASE
@@ -649,6 +690,8 @@ class InterfazMonteCarlo(tk.Tk):
 
         self.carpeta_actual = carpeta
         escenarios = int(float(m["escenarios"]))
+        self.escenarios_actual = escenarios
+        self.version_actual = m.get("version", carpeta.name)
         total = float(m["segundos_total"])
         cpu = float(m["segundos_cpu"])
 
@@ -723,6 +766,13 @@ class InterfazMonteCarlo(tk.Tk):
             self.eje.set_ylim(-0.002, max_y * 1.25)
 
         self.eje.set_xlabel("Primer año de inversión T (A ≥ J)", color=TEXTO, fontsize=9)
+<<<<<<< HEAD
+        contexto = self.version_actual or "resultados cargados"
+        if self.escenarios_actual:
+            contexto += f" · {self.escenarios_actual:,} escenarios".replace(",", " ")
+        self.eje.set_title(contexto, color=GRIS, fontsize=9, loc="left", pad=8)
+=======
+>>>>>>> origin/develop
         self.figura.tight_layout()
         self.canvas.draw_idle()
 

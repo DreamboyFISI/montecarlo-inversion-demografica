@@ -1,5 +1,9 @@
 ================================================================================
+<<<<<<< HEAD
+ESTADO: PARAMETROS_CONFIGURADOS
+=======
 ESTADO: DEMO_NO_VALIDADO
+>>>>>>> origin/develop
 Ejecucion ilustrativa del modulo de Clustering (Semana 13).
 Los resultados dependen de supuestos didacticos (sigma_fec=0.05, sigma_mort=0.015)
 y NO constituyen un pronostico demografico oficial para el Peru.

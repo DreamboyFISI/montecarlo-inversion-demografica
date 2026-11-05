@@ -3,7 +3,11 @@
 **Módulo:** Modelamiento Avanzado — Clustering (Semana 13)  
 **Curso:** Programación Paralela y Concurrente / Minería de Datos  
 **Repositorio:** `montecarlo-inversion-demografica`  
+<<<<<<< HEAD
+**Estado de los datos:** `PARAMETROS_CONFIGURADOS` (Los resultados dependen de supuestos didácticos y no constituyen un pronóstico demográfico oficial del Perú).
+=======
 **Estado de los datos:** `DEMO_NO_VALIDADO` (Los resultados dependen de supuestos didácticos y no constituyen un pronóstico demográfico oficial del Perú).
+>>>>>>> origin/develop
 
 ---
 
