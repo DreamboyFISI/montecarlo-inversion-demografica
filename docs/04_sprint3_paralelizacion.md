@@ -121,7 +121,20 @@ Medido con `scripts/rendimiento.py` dentro del contenedor (sin límite de CPU). 
 
 > T1 de este equipo (25,25 s para R = 10⁴) no es comparable con el T1 del Xeon de `linea_base/` (32,94 s). Cada speedup se calcula con T1 y Tp medidos en la misma máquina.
 
-## 8. Pendiente para S11–S12
+## 8. Versión Híbrida MPI + OpenMP (S11)
 
-- **S11, híbrido MPI + OpenMP.** Dentro del bloque de cada proceso, el bucle se reparte con el mismo `#pragma omp parallel for` (`MPI_Init_thread` con `MPI_THREAD_FUNNELED`, porque solo el hilo maestro llama a MPI). Habrá que comparar p × h frente a MPI puro con los mismos núcleos.
+Implementada en `MonteCarlo_Paralelo/src/main_hibrido.cpp` (`simulador_hibrido`):
+
+- **Arquitectura jerárquica:**
+  1. $P$ procesos MPI para memoria distribuida (entre nodos del clúster o contenedores).
+  2. Dentro de cada proceso, $H$ hilos OpenMP de memoria compartida procesan los escenarios del bloque local mediante `#pragma omp parallel for schedule(dynamic, 16)`.
+- **Inicialización de hilos en MPI:**  
+  Usa `MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &proporcionado)`, garantizando que el proceso es multihilo pero solo el hilo maestro efectúa llamadas MPI (`MPI_Barrier`, `MPI_Gatherv`, `MPI_Reduce`, etc.).
+- **Mapeo y paso de argumentos:**  
+  Admite `--hilos H` para dimensionar el pool de hilos dentro de cada proceso MPI (por defecto toma `OMP_NUM_THREADS` o los cores asignados).
+- **Correctitud y reproducibilidad:**  
+  Al compartir la misma fórmula de semillas `splitmix64(semilla + r)`, `simulador_hibrido` produce resultados byte a byte idénticos a los del secuencial, OpenMP y MPI puro para cualquier combinación $P \times H$.
+
+## 9. Pendiente para S12
+
 - **S12, R = 10⁷.** Con 10⁷ escenarios, `escenarios.csv` ocupa ≈ 190 MB. Hay que evaluar si se escribe completo o solo el histograma, para que la parte secuencial no limite el speedup (Amdahl).
