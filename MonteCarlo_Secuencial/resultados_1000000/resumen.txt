@@ -1,5 +1,5 @@
-ESTADO: DEMO_NO_VALIDADO
-Ejecucion ilustrativa con supuestos no confirmados. No es una prediccion validada del Peru.
+ESTADO: PARAMETROS_CONFIGURADOS
+Resultados de uso academico basados en los parametros configurados.
 Version: C++17 + OpenMP, un proceso, 12 hilos.
 Poblacion inicial: 32706028
 Menores de 15: 7429471

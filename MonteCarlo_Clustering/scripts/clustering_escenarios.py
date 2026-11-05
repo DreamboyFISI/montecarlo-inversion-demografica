@@ -7,7 +7,7 @@ Proyecto: montecarlo-inversion-demografica
 Segmenta los 10 000 escenarios estocasticos de la simulacion demografica
 en base a los factores de fecundidad, mortalidad y el anio de inversion.
 
-ESTADO DE LOS DATOS: DEMO_NO_VALIDADO.
+ESTADO DE LOS DATOS: PARAMETROS_CONFIGURADOS.
 Los resultados dependen de supuestos didacticos y no son un pronostico oficial.
 """
 
@@ -359,7 +359,7 @@ def main():
 
     print("================================================================================")
     print("MODULO DE CLUSTERING DEMOGRAFICO - SEMANA 13")
-    print("ESTADO: DEMO_NO_VALIDADO (Supuestos didacticos; no es pronostico oficial)")
+    print("ESTADO: PARAMETROS_CONFIGURADOS (Supuestos didacticos; no es pronostico oficial)")
     print(f"Carpeta entrada:  {carpeta_res}")
     print(f"Carpeta salida:   {carpeta_salida}")
     print(f"Carpeta graficos: {carpeta_graficos}")
@@ -708,7 +708,7 @@ def main():
     reglas_file_path = os.path.join(carpeta_salida, "reglas_arbol.txt")
     with open(reglas_file_path, "w", encoding="utf-8") as f:
         f.write("REGLAS DE DECISION EXPLICATIVAS (Surrogate Decision Tree)\n")
-        f.write("ESTADO: DEMO_NO_VALIDADO (Supuestos didacticos)\n")
+        f.write("ESTADO: PARAMETROS_CONFIGURADOS (Supuestos didacticos)\n")
         f.write(f"Objetivo: Explicar clusters de inversion demografica segun factores macro\n")
         f.write(f"Exactitud global del arbol (Accuracy): {acc_tree * 100:.2f} %\n")
         f.write("--------------------------------------------------------------------------------\n")
@@ -748,7 +748,7 @@ def main():
     ax2.plot(k_range, silhouettes_km, marker='s', color=color, linewidth=2, linestyle='--', label='Silhouette')
     ax2.tick_params(axis='y', labelcolor=color)
 
-    plt.title('01. Método del Codo y Coeficiente Silhouette (K-Means)\n[DEMO_NO_VALIDADO]', fontsize=12, fontweight='bold')
+    plt.title('01. Método del Codo y Coeficiente Silhouette (K-Means)', fontsize=12, fontweight='bold')
     fig.tight_layout()
     fig1_path = os.path.join(carpeta_graficos, "01_codo_silhouette_kmeans.png")
     plt.savefig(fig1_path, dpi=300)
@@ -764,7 +764,7 @@ def main():
         leaf_font_size=10.,
         show_contracted=True
     )
-    plt.title('02. Dendrograma Truncado de Enlace Ward (Hierarchical Clustering)\n[DEMO_NO_VALIDADO]', fontsize=12, fontweight='bold')
+    plt.title('02. Dendrograma Truncado de Enlace Ward (Hierarchical Clustering)', fontsize=12, fontweight='bold')
     plt.xlabel('Índice de muestra o tamaño de conglomerado contraído', fontsize=11)
     plt.ylabel('Distancia cuadrática de enlace Ward', fontsize=11)
     plt.grid(True, linestyle='--', alpha=0.4)
@@ -777,7 +777,7 @@ def main():
     plt.figure(figsize=(8, 5))
     plt.plot(range(len(k_distances)), k_distances, color='navy', linewidth=2)
     plt.axhline(y=eps_candidato, color='crimson', linestyle='--', label=f'eps elegido = {eps_candidato:.3f}')
-    plt.title(f'03. Gráfico de k-distancias ordenadas para DBSCAN (k={min_samples_db})\n[DEMO_NO_VALIDADO]', fontsize=12, fontweight='bold')
+    plt.title(f'03. Gráfico de k-distancias ordenadas para DBSCAN (k={min_samples_db})', fontsize=12, fontweight='bold')
     plt.xlabel('Puntos ordenados por distancia', fontsize=11)
     plt.ylabel(f'Distancia al {min_samples_db}-ésimo vecino', fontsize=11)
     plt.legend(loc='upper left')
@@ -806,7 +806,7 @@ def main():
     )
     plt.axvline(x=1.0, color='gray', linestyle=':', alpha=0.7)
     plt.axhline(y=1.0, color='gray', linestyle=':', alpha=0.7)
-    plt.title('04. Espacio de Factores Macro por Régimen de Inversión\n[DEMO_NO_VALIDADO]', fontsize=12, fontweight='bold')
+    plt.title('04. Espacio de Factores Macro por Régimen de Inversión', fontsize=12, fontweight='bold')
     plt.xlabel('Factor de Fecundidad (Línea base = 1.0, $\\sigma=0.05$)', fontsize=11)
     plt.ylabel('Factor de Mortalidad (Línea base = 1.0, $\\sigma=0.015$)', fontsize=11)
     plt.legend(loc='best', framealpha=0.9)
@@ -824,7 +824,7 @@ def main():
     for patch, col in zip(bp['boxes'], colores_c):
         patch.set_facecolor(col)
         patch.set_alpha(0.6)
-    plt.title('05. Distribución del Año de Inversión Demográfica por Cluster K-Means\n[DEMO_NO_VALIDADO]', fontsize=12, fontweight='bold')
+    plt.title('05. Distribución del Año de Inversión Demográfica por Cluster K-Means', fontsize=12, fontweight='bold')
     plt.ylabel('Año del cruce (A ≥ J)', fontsize=11)
     plt.grid(True, linestyle='--', alpha=0.5, axis='y')
     plt.tight_layout()
@@ -841,7 +841,7 @@ def main():
             c=colores_c[c % len(colores_c)], label=f"{nombres_dict[c]}",
             alpha=0.5, edgecolors='none', s=20
         )
-    plt.title(f'06. Proyección PCA de Escenarios Clusterizados\n(Varianza explicada: PC1={var_exp[0]*100:.1f}%, PC2={var_exp[1]*100:.1f}%) [DEMO_NO_VALIDADO]', fontsize=12, fontweight='bold')
+    plt.title(f'06. Proyección PCA de Escenarios Clusterizados\n(Varianza explicada: PC1={var_exp[0]*100:.1f}%, PC2={var_exp[1]*100:.1f}%)', fontsize=12, fontweight='bold')
     plt.xlabel('Componente Principal 1', fontsize=11)
     plt.ylabel('Componente Principal 2', fontsize=11)
     plt.legend(loc='best')
@@ -871,7 +871,7 @@ def main():
     ax_ch.set_title('Calinski-Harabasz (Mayor es mejor)', fontsize=10, fontweight='bold')
     ax_ch.grid(True, linestyle='--', alpha=0.4, axis='y')
 
-    plt.suptitle('07. Evaluación Comparativa de Calidad de Clustering\n[DEMO_NO_VALIDADO]', fontsize=12, fontweight='bold')
+    plt.suptitle('07. Evaluación Comparativa de Calidad de Clustering', fontsize=12, fontweight='bold')
     plt.tight_layout()
     fig7_path = os.path.join(carpeta_graficos, "07_comparativa_metricas_algoritmos.png")
     plt.savefig(fig7_path, dpi=300)
@@ -887,7 +887,7 @@ def main():
         rounded=True,
         fontsize=9
     )
-    plt.title('08. Árbol de Decisión Sustituto (Explicabilidad de Segmentos)\n[DEMO_NO_VALIDADO]', fontsize=13, fontweight='bold')
+    plt.title('08. Árbol de Decisión Sustituto (Explicabilidad de Segmentos)', fontsize=13, fontweight='bold')
     plt.tight_layout()
     fig8_path = os.path.join(carpeta_graficos, "08_arbol_decision_reglas.png")
     plt.savefig(fig8_path, dpi=300)
@@ -899,7 +899,7 @@ def main():
     resumen_path = os.path.join(carpeta_salida, "resumen_clustering.txt")
     with open(resumen_path, "w", encoding="utf-8") as f:
         f.write("================================================================================\n")
-        f.write("ESTADO: DEMO_NO_VALIDADO\n")
+        f.write("ESTADO: PARAMETROS_CONFIGURADOS\n")
         f.write("Ejecucion ilustrativa del modulo de Clustering (Semana 13).\n")
         f.write("Los resultados dependen de supuestos didacticos (sigma_fec=0.05, sigma_mort=0.015)\n")
         f.write("y NO constituyen un pronostico demografico oficial para el Peru.\n")

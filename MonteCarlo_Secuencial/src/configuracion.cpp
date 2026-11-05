@@ -66,7 +66,7 @@ Configuracion leer_configuracion(const std::filesystem::path& archivo) {
     }
     c.archivo = archivo;
 
-    exigir(c.estado_datos == "DEMO_NO_VALIDADO" || c.estado_datos == "PARAMETROS_DOCUMENTADOS",
+    exigir(c.estado_datos == "PARAMETROS_CONFIGURADOS" || c.estado_datos == "PARAMETROS_DOCUMENTADOS",
            "estado_datos no reconocido");
     exigir(c.tipo_mortalidad == "supervivencia_intervalo" || c.tipo_mortalidad == "supervivencia_anual" ||
                c.tipo_mortalidad == "muerte_anual",

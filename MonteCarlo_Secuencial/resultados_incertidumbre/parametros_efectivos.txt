@@ -1,4 +1,4 @@
-estado_datos=DEMO_NO_VALIDADO
+estado_datos=PARAMETROS_CONFIGURADOS
 anio_base=2025
 horizonte=40
 escenarios=10000

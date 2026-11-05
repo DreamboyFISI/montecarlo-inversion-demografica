@@ -1,5 +1,5 @@
 ================================================================================
-ESTADO: DEMO_NO_VALIDADO
+ESTADO: PARAMETROS_CONFIGURADOS
 Clustering de Edades Simples (Parte B - Semana 13)
 ================================================================================
 
