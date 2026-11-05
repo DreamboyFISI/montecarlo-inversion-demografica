@@ -62,11 +62,7 @@ Error Monte Carlo: el error estándar de F̂(y) es √(F̂(1 − F̂)/R) y el de
 
 Cada escenario cuesta lo mismo, porque siempre se simula el horizonte completo aunque la inversión ya haya ocurrido: por año hay 1 Poisson, 1 binomial de sexo, 202 binomiales de muerte y 2 de supervivencia de nacidos, es decir 206 sorteos; en H = 40 años son ≈ 8 240 sorteos. El costo total es O(R · H) y la memoria es O(1) por escenario en la versión secuencial. Con costo uniforme por escenario, un reparto estático por bloques queda balanceado (MPI).
 
-<<<<<<< HEAD
 ## 7. Supuestos (estado `PARAMETROS_CONFIGURADOS`)
-=======
-## 7. Supuestos (estado `DEMO_NO_VALIDADO`)
->>>>>>> origin/develop
 
 | Supuesto | Valor | Fuente / estado |
 |---|---|---|

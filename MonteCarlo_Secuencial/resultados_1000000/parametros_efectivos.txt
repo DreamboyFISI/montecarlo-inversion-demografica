@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 estado_datos=PARAMETROS_CONFIGURADOS
-=======
-estado_datos=DEMO_NO_VALIDADO
->>>>>>> origin/develop
 anio_base=2025
 horizonte=40
 escenarios=1000000
