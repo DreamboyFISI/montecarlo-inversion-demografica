@@ -53,9 +53,9 @@ ROJO = "#E53935"
 
 MS_REFERENCIA = {
     "C++ Secuencial": 2.17,
-    "C++ OpenMP": 0.65,
-    "C++ MPI": 0.85,
-    "C++ Híbrido (MPI+OpenMP)": 0.55,
+    "C++ OpenMP": 0.35,
+    "C++ MPI": 0.60,
+    "C++ Híbrido (MPI+OpenMP)": 0.31,
     "Go": 2.19,
 }
 
@@ -215,19 +215,24 @@ class InterfazMonteCarlo(tk.Tk):
         entrada_esc.bind("<KeyRelease>", lambda _e: self._actualizar_estimacion())
 
         rapidos = ttk.Frame(lateral, style="Card.TFrame")
-        rapidos.pack(fill="x", pady=(0, 10))
-        for val in (1_000, 10_000, 100_000):
-            ttk.Button(rapidos, text=f"{val // 1000}k", width=5, command=lambda v=val: self._poner_escenarios(v)).pack(side="left", padx=(0, 4))
+        rapidos.pack(fill="x", pady=(0, 8))
+        for val, lbl in ((1_000, "1k"), (10_000, "10k"), (100_000, "100k"), (1_000_000, "1M")):
+            ttk.Button(rapidos, text=lbl, width=4, command=lambda v=val: self._poner_escenarios(v)).pack(side="left", padx=(0, 2))
 
         self.aviso_var = tk.StringVar()
         self.aviso = tk.Label(lateral, textvariable=self.aviso_var, bg=BLANCO, fg=GRIS, justify="left", wraplength=240, font=("Segoe UI", 8))
-        self.aviso.pack(fill="x", pady=(0, 10))
+        self.aviso.pack(fill="x", pady=(0, 8))
         self._actualizar_estimacion()
 
         self.ejecutar_btn = ttk.Button(lateral, text="▶ Ejecutar Simulación", style="Accent.TButton", command=self.ejecutar)
         self.ejecutar_btn.pack(fill="x", pady=(2, 6))
 
-        ttk.Button(lateral, text="Cargar Resultados CSV", style="Soft.TButton", command=self.seleccionar_resultados).pack(fill="x")
+        ttk.Button(lateral, text="📁 Seleccionar Carpeta CSV...", style="Soft.TButton", command=self.seleccionar_resultados).pack(fill="x", pady=(0, 4))
+
+        precargas = ttk.Frame(lateral, style="Card.TFrame")
+        precargas.pack(fill="x", pady=(0, 4))
+        ttk.Button(precargas, text="📊 Cargar 10k", width=11, command=lambda: self._cargar_preset("resultados_incertidumbre")).pack(side="left", padx=(0, 4))
+        ttk.Button(precargas, text="⚡ Cargar 1M (S12)", width=15, command=lambda: self._cargar_preset("resultados_1000000")).pack(side="left")
 
         self.progreso = ttk.Progressbar(lateral, mode="indeterminate")
         self.progreso.pack(fill="x", pady=(14, 4))
@@ -477,7 +482,7 @@ class InterfazMonteCarlo(tk.Tk):
             ("Sprint 2", "S9", "Validación estadística y línea base T1 (R=10³, 10⁴, 10⁵)", "✔ Hecho"),
             ("Sprint 3", "S10", "Paralelización con OpenMP (simulador_omp) y MPI + Docker (simulador_mpi)", "✔ Hecho"),
             ("Sprint 3", "S11", "Integración híbrida MPI + OpenMP (simulador_hibrido, PB-08)", "✔ Implementado"),
-            ("Sprint 3", "S12", "Ejecución masiva de 10 millones de escenarios (R = 10⁷)", "⏳ Pendiente"),
+            ("Sprint 3", "S12", "Ejecución masiva de 1 millón de escenarios (R = 10⁶)", "✔ Ejecutado y Disponible"),
             ("Sprint 4", "S13", "Modelamiento Avanzado: Clustering de Escenarios y Edades (docs/06)", "✔ Implementado"),
             ("Sprint 4", "S14", "Informe final, correcciones y ensayo de diapositivas", "⏳ En preparación"),
             ("Cierre", "S15", "Presentación final del proyecto", "📅 Programado"),
@@ -505,6 +510,14 @@ class InterfazMonteCarlo(tk.Tk):
     def _poner_escenarios(self, valor: int) -> None:
         self.escenarios_var.set(str(valor))
         self._actualizar_estimacion()
+
+    def _cargar_preset(self, subcarpeta: str) -> None:
+        p = BASE / subcarpeta
+        if not p.exists() or not (p / "distribucion.csv").exists():
+            messagebox.showinfo("Preset en proceso", f"La carpeta '{subcarpeta}' aún se está generando o no contiene resultados completos.")
+            return
+        self.cargar_resultados(p)
+        self.estado_var.set(f"Cargado exitosamente preset: {subcarpeta}")
 
     def _actualizar_estimacion(self) -> None:
         try:
@@ -564,11 +577,11 @@ class InterfazMonteCarlo(tk.Tk):
             paralelo_wsl = ruta_a_wsl(PARALELO_BASE)
 
             if motor == "C++ OpenMP":
-                cmd_wsl = f"cd {paralelo_wsl} && ./simulador_omp --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl} --escenarios {escenarios} --hilos 4"
+                cmd_wsl = f"cd {paralelo_wsl} && ./simulador_omp --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl} --escenarios {escenarios} --hilos 8"
             elif motor == "C++ MPI":
-                cmd_wsl = f"cd {paralelo_wsl} && mpirun --oversubscribe -np 2 ./simulador_mpi --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl} --escenarios {escenarios}"
+                cmd_wsl = f"cd {paralelo_wsl} && mpirun --oversubscribe -np 4 ./simulador_mpi --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl} --escenarios {escenarios}"
             elif motor == "C++ Híbrido (MPI+OpenMP)":
-                cmd_wsl = f"cd {paralelo_wsl} && mpirun --oversubscribe -np 2 ./simulador_hibrido --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl} --escenarios {escenarios} --hilos 2"
+                cmd_wsl = f"cd {paralelo_wsl} && mpirun --oversubscribe -np 2 ./simulador_hibrido --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl} --escenarios {escenarios} --hilos 4"
             else:
                 messagebox.showerror("Error", f"Motor desconocido: {motor}")
                 return

@@ -231,6 +231,14 @@ Ejemplo con `config_incertidumbre.ini` y 10 000 escenarios:
 - 0,75 % de escenarios sin inversión en el horizonte;
 - gráfico en `graficos_incertidumbre/06_distribucion_anio.png`.
 
+Ejemplo masivo con `config_incertidumbre.ini` y **1 000 000 de escenarios** (Sprint 3, S12 en `MonteCarlo_Secuencial/resultados_1000000/`):
+
+- **Tiempo de ejecución (Tp)**: 266,7 s (4,4 min) con `simulador_omp` (12 hilos);
+- **Throughput**: 3 749 escenarios/s (149 965 escenario-años/s);
+- **Distribución**: media 2054,50 años, desviación 2,30 años, rango extendido 2044–2065;
+- **Sin inversión en el horizonte**: 6 585 de 1 000 000 (0,66 %);
+- **Memoria pico (RSS)**: 27,5 MiB (escalabilidad O(1) de memoria por hilo).
+
 Los sigmas son supuestos didácticos.
 
 ## Métricas de rendimiento

@@ -1,0 +1,49 @@
+ESTADO: DEMO_NO_VALIDADO
+Ejecucion ilustrativa con supuestos no confirmados. No es una prediccion validada del Peru.
+Version: C++17 + OpenMP, un proceso, 12 hilos.
+Poblacion inicial: 32706028
+Menores de 15: 7429471
+65 o mas: 3440272
+Escenarios completados: 1000000
+Horizonte: 40
+Con inversion: 993415
+Sin inversion: 6585
+Probabilidad de inversion: 0.993415
+Probabilidad sin inversion: 0.006585
+Primer anio de inversion (escenarios con inversion): minimo 2044, media 2054.50284322, maximo 2065
+Segundos simulacion y escritura de escenarios: 266.729454974
+Segundos hasta resumen: 266.747941828
+--- Metricas de rendimiento (OpenMP, Tp) ---
+Procesos x hilos: 1 x 12
+Segundos carga de datos: 0.006901
+Segundos simulacion y escritura de escenarios: 266.729455
+Segundos hasta resumen (Tp total): 266.747942
+Segundos de CPU del proceso: 3449.167598
+Milisegundos por escenario: 0.266729
+Escenarios por segundo: 3749.117247
+Escenario-anios por segundo: 149964.689891
+Memoria pico (MiB): 27.500000
+--- Distribucion del primer anio de inversion p(T = y) ---
+2044         1  0.0000  
+2045         7  0.0000  
+2046        45  0.0000  
+2047       281  0.0003  
+2048      1324  0.0013  
+2049      5420  0.0054  #
+2050     17598  0.0176  ####
+2051     53249  0.0532  ############
+2052    106848  0.1068  ########################
+2053    158409  0.1584  ###################################
+2054    181084  0.1811  ########################################
+2055    165505  0.1655  #####################################
+2056    128450  0.1285  ############################
+2057     80575  0.0806  ##################
+2058     45717  0.0457  ##########
+2059     24798  0.0248  #####
+2060     13226  0.0132  ###
+2061      4479  0.0045  #
+2062      2690  0.0027  #
+2063      1817  0.0018  
+2064      1162  0.0012  
+2065       730  0.0007  
+Media 2054.50, desviacion 2.30 anios, rango 2044-2065; sin inversion: 6585 de 1000000 (0.66 %)
