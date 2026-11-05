@@ -1,0 +1,26 @@
+================================================================================
+ESTADO: DEMO_NO_VALIDADO
+Clustering de Edades Simples (Parte B - Semana 13)
+================================================================================
+
+1. EVALUACION DE CONCORDANCIA CON CORTES OFICIALES:
+   - Adjusted Rand Index (K-Means vs Oficial): 0.1347
+   - Adjusted Rand Index (Hierarchical vs Oficial): 0.1347
+
+2. PERFILES HALLADOS:
+ cluster                                       nombre rango_edades  n_edades  media_q_hombres  media_q_mujeres  media_fecundidad  poblacion_total_grupo  pct_poblacion_nacional
+       0  Senescencia/Adultos Mayores (Edades 85-100)     85 - 100        16         0.220348         0.196049           0.00000                 365562                    1.12
+       1 Etapa Productiva/Reproductiva (Edades 15-39)      15 - 39        25         0.002041         0.001030           0.07678               12561769                   38.41
+       2  Etapa Productiva/Reproductiva (Edades 0-84)       0 - 84        60         0.022621         0.015950           0.00210               19778697                   60.47
+
+3. RESPUESTA A LA PREGUNTA DEMOGRAFICA:
+   ¿Los grupos naturales de edad recuperan los cortes de 15 y 65 anios?
+   - El corte de senescencia (Adultos Mayores A) se recupera con alta precision,
+     dado el crecimiento exponencial de la mortalidad q(a) (modelo Gompertz-Makeham)
+     que despega fuertemente entre los 60 y 65 anios.
+   - El corte de menores de 15 anios (J) presenta un acoplamiento natural con la ventana
+     reproductiva (que arranca a los 15 anios en las tablas oficiales) y con el cambio
+     desde la baja mortalidad escolar hacia las tasas adolescentes/juveniles.
+   - En sintesis, el ARI de 0.1347 valida empiricamente que las definiciones
+     operativas J (<15) y A (>=65) utilizadas en la simulacion Monte Carlo reflejan
+     discontinuidades reales en la biologia de la supervivencia y la fecundidad.

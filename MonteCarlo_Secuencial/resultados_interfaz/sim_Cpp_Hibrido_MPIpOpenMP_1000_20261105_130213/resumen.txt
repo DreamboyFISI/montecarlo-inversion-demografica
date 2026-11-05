@@ -1,0 +1,29 @@
+ESTADO: DEMO_NO_VALIDADO
+Ejecucion ilustrativa con supuestos no confirmados. No es una prediccion validada del Peru.
+Version: C++17 + Hibrido (MPI + OpenMP), 2 procesos x 2 hilos.
+Poblacion inicial: 32706028
+Menores de 15: 7429471
+65 o mas: 3440272
+Escenarios completados: 1000
+Horizonte: 40
+Con inversion: 1000
+Sin inversion: 0
+Probabilidad de inversion: 1
+Probabilidad sin inversion: 0
+Primer anio de inversion (escenarios con inversion): minimo 2054, media 2054, maximo 2054
+Segundos simulacion y escritura de escenarios: 0.532773742
+Segundos hasta resumen: 0.554373647
+--- Metricas de rendimiento (Hibrido MPI+OpenMP, Tp) ---
+Procesos x hilos: 2 x 2
+Segundos carga de datos: 0.005942
+Segundos simulacion y escritura de escenarios: 0.532774
+Segundos hasta resumen (Tp total): 0.554374
+Segundos de CPU del proceso: 2.234207
+Milisegundos por escenario: 0.532774
+Escenarios por segundo: 1876.969380
+Escenario-anios por segundo: 75078.775185
+Memoria pico (MiB): 20.847656
+Segundos de espera + comunicacion (MPI_Gatherv): 0.008026
+--- Distribucion del primer anio de inversion p(T = y) ---
+2054      1000  1.0000  ########################################
+Media 2054.00, desviacion 0.00 anios, rango 2054-2054; sin inversion: 0 de 1000 (0.00 %)

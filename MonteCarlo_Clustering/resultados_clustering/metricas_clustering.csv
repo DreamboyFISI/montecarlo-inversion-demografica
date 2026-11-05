@@ -1,0 +1,4 @@
+algoritmo,k_clusters,silhouette,davies_bouldin,calinski_harabasz,pct_ruido,tiempo_pared_s,tiempo_cpu_s,memoria_pico_mib,ari_estabilidad,speedup_multihilo
+K-Means,3,0.3165,1.0312,6203.14,0.0,0.0515,0.3125,193.82,0.9352 +/- 0.0378,1.26
+Hierarchical (Ward),3,0.2957,1.148,5832.77,0.0,0.2002,0.5781,198.49,N/A (Determinista),1.0
+DBSCAN,29,0.0407,1.2454,715.59,3.87,0.0501,0.0469,205.57,N/A (Determinista),1.0

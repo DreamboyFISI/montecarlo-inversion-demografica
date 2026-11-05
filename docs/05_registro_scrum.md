@@ -60,7 +60,7 @@ Calendario según el cronograma: Sprint 1 = S4–S6; Sprint 2 = S7–S9, con pau
 - **Criterio transversal:** la salida debe ser idéntica byte a byte a la secuencial con la misma semilla.
 - Asistentes y capacidad: **[completar por el equipo]**
 
-### Avance al cierre de S10
+### Avance al cierre de S11
 
-- PB-06 y PB-07 **hechos**. El detalle está en `docs/04_sprint3_paralelizacion.md`.
-- Sprint Review y Retrospectiva del Sprint 3: en S12.
+- PB-06 (OpenMP), PB-07 (MPI + Docker) y PB-08 (Híbrido MPI + OpenMP) **hechos**. El detalle está en `docs/04_sprint3_paralelizacion.md`.
+- Sprint Review y Retrospectiva del Sprint 3: en S12 (tras la ejecución masiva de 10 millones de escenarios).

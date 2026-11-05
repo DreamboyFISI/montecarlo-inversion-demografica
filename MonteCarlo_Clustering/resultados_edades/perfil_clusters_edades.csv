@@ -1,0 +1,4 @@
+cluster,nombre,rango_edades,n_edades,media_q_hombres,media_q_mujeres,media_fecundidad,poblacion_total_grupo,pct_poblacion_nacional
+0,Senescencia/Adultos Mayores (Edades 85-100),85 - 100,16,0.220348,0.196049,0.0,365562,1.12
+1,Etapa Productiva/Reproductiva (Edades 15-39),15 - 39,25,0.002041,0.00103,0.07678,12561769,38.41
+2,Etapa Productiva/Reproductiva (Edades 0-84),0 - 84,60,0.022621,0.01595,0.0021,19778697,60.47

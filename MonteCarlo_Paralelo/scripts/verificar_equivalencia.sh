@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Verifica que OpenMP (1, 2, 3 y 8 hilos) y MPI (1, 2, 3 y 4 procesos) producen exactamente los mismos
-# CSV de resultados que la version secuencial, con tasas fijas y con incertidumbre macro.
+# Verifica que OpenMP (1, 2, 3 y 8 hilos), MPI (1, 2, 3 y 4 procesos) e Hibrido (2 procesos x 2 y 4 hilos)
+# producen exactamente los mismos CSV de resultados que la version secuencial, con tasas fijas y con incertidumbre macro.
 # Se ejecuta desde MonteCarlo_Paralelo:  ./scripts/verificar_equivalencia.sh [escenarios]
 # Variable opcional MPIRUN_OPCIONES (p. ej. "--oversubscribe --allow-run-as-root").
 set -euo pipefail
@@ -44,10 +44,22 @@ for config in config_demostracion.ini config_incertidumbre.ini; do
         # shellcheck disable=SC2086
         comparar "$ref" "$out" "MPI $p procesos" $archivos
     done
+    if [[ -f ./simulador_hibrido ]]; then
+        for p in 2; do
+            for h in 2 4; do
+                out="$TMP/hibrido_${p}x${h}_$config"
+                # shellcheck disable=SC2086
+                mpirun ${MPIRUN_OPCIONES:-} -np "$p" ./simulador_hibrido --config "$SEC/$config" --datos "$SEC/datos" \
+                    --salida "$out" --escenarios "$R" --hilos "$h" > /dev/null
+                # shellcheck disable=SC2086
+                comparar "$ref" "$out" "Hibrido $p proc x $h hilos" $archivos
+            done
+        done
+    fi
 done
 
 if [[ $fallos -eq 0 ]]; then
-    echo "Equivalencia: OK (OpenMP y MPI reproducen exactamente la version secuencial)"
+    echo "Equivalencia: OK (OpenMP, MPI e Hibrido reproducen exactamente la version secuencial)"
 else
     echo "Equivalencia: $fallos FALLA(S)"
     exit 1

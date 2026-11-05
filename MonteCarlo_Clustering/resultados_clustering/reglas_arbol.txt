@@ -1,0 +1,43 @@
+REGLAS DE DECISION EXPLICATIVAS (Surrogate Decision Tree)
+ESTADO: DEMO_NO_VALIDADO (Supuestos didacticos)
+Objetivo: Explicar clusters de inversion demografica segun factores macro
+Exactitud global del arbol (Accuracy): 89.51 %
+--------------------------------------------------------------------------------
+Clases objetivo:
+  Clase 0: Inversión Central
+  Clase 1: Inversión Temprana
+  Clase 2: Inversión Tardía
+--------------------------------------------------------------------------------
+|--- factor_fecundidad <= 1.01
+|   |--- factor_mortalidad <= 1.00
+|   |   |--- factor_mortalidad <= 1.00
+|   |   |   |--- class: 1
+|   |   |--- factor_mortalidad >  1.00
+|   |   |   |--- class: 1
+|   |--- factor_mortalidad >  1.00
+|   |   |--- factor_fecundidad <= 0.95
+|   |   |   |--- class: 1
+|   |   |--- factor_fecundidad >  0.95
+|   |   |   |--- class: 0
+|--- factor_fecundidad >  1.01
+|   |--- factor_mortalidad <= 1.01
+|   |   |--- factor_fecundidad <= 1.02
+|   |   |   |--- class: 2
+|   |   |--- factor_fecundidad >  1.02
+|   |   |   |--- class: 2
+|   |--- factor_mortalidad >  1.01
+|   |   |--- factor_fecundidad <= 1.04
+|   |   |   |--- class: 0
+|   |   |--- factor_fecundidad >  1.04
+|   |   |   |--- class: 2
+
+--------------------------------------------------------------------------------
+INTERPRETACION DEMOGRAFICA DE LAS REGLAS:
+1. El factor de fecundidad es la variable de corte primaria y decisiva.
+   - Fecundidad baja reduce fuertemente la generacion de menores de 15 anios (J),
+     acelerando el anio en que los adultos mayores (A) superan a J (Inversion Temprana).
+   - Fecundidad alta expande los contingentes infantiles y juveniles (J),
+     retrasando el momento del cruce hacia el final del horizonte (Inversion Tardia).
+2. El factor de mortalidad actua como modulador secundario:
+   - Mayor mortalidad frena el crecimiento de adultos mayores (A), demorando ligeramente el cruce.
+   - Menor mortalidad incrementa la supervivencia geriatrica, anticipando la inversion.

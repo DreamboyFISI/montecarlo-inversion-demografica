@@ -15,7 +15,8 @@ Proyecto del curso Programación Paralela y Concurrente. Abordamos la paraleliza
 7. [Incertidumbre macro por escenario](#incertidumbre-macro-por-escenario)
 8. [Métricas de rendimiento](#métricas-de-rendimiento)
 9. [Versión Go](#versión-go)
-10. [Documentación Scrum](#documentación-scrum)
+10. [Clustering de escenarios (S13)](#clustering-de-escenarios-s13)
+11. [Documentación Scrum](#documentación-scrum)
 
 ## Estructura del repositorio
 
@@ -45,6 +46,7 @@ Proyecto del curso Programación Paralela y Concurrente. Abordamos la paraleliza
 | `MonteCarlo_Secuencial/interfaz.py` | Interfaz gráfica (Tkinter) que ejecuta el simulador C++ o Go y muestra los resultados | extra |
 | `MonteCarlo_Paralelo/src/main_openmp.cpp` | Bucle Monte Carlo con OpenMP | S10 |
 | `MonteCarlo_Paralelo/src/main_mpi.cpp` | Bucle Monte Carlo con MPI | S10 |
+| `MonteCarlo_Paralelo/src/main_hibrido.cpp` | Bucle Monte Carlo híbrido MPI + OpenMP | S11 |
 | `MonteCarlo_Paralelo/Makefile` | Compila ambas versiones con los fuentes de `MonteCarlo_Secuencial/src` | S10 |
 | `MonteCarlo_Paralelo/scripts/verificar_equivalencia.sh` | Compara los CSV de OpenMP (1, 2, 3, 8 hilos) y MPI (1, 2, 3, 4 procesos) con los del secuencial | S10 |
 | `MonteCarlo_Paralelo/scripts/rendimiento.py` | Speedup, eficiencia, costo, Karp-Flatt y Amdahl → `rendimiento/` | S10 |
@@ -52,6 +54,7 @@ Proyecto del curso Programación Paralela y Concurrente. Abordamos la paraleliza
 | `MonteCarlo_Paralelo/docker-compose.yml`, `hostfile` | Clúster MPI de 4 nodos (contenedores) con 2 CPU cada uno | S10 |
 | `MonteCarlo_Paralelo/docker/ejecutar_cluster.sh` | Lanza `mpirun` en el clúster; resultados en `resultados_cluster/` | S10 |
 | `MonteCarlo_Go/` | Implementación secuencial alternativa en Go | extra |
+| `MonteCarlo_Clustering/` | Segmentación de escenarios (K-Means, Ward, DBSCAN) y perfiles de edad con métricas y gráficos | S13 |
 
 ## Inicio rápido con Docker
 
@@ -141,14 +144,15 @@ Con 1 000 escenarios, 40 años, semilla 12345 y los supuestos de demostración:
 - El balance fue 0 en los 40 años.
 - Tardó unos 3 s en un Intel Xeon de 2,8 GHz con g++ 13.3 y -O2 (≈ 3 ms por escenario y 14 MiB de memoria; detalle en `linea_base/`).
 
-## Versiones paralelas: OpenMP y MPI (S10)
+## Versiones paralelas: OpenMP, MPI e Híbrido (S10–S11)
 
 Las versiones paralelas usan **el mismo modelo y los mismos fuentes** que la secuencial. Solo cambia cómo se reparten los R escenarios:
 
-| Ejecutable | Paralelismo | Reparto de escenarios |
-|---|---|---|
-| `simulador_omp` | 1 proceso, P hilos (memoria compartida) | `#pragma omp parallel for schedule(dynamic, 16)` |
-| `simulador_mpi` | P procesos, 1 hilo cada uno (memoria distribuida) | Bloques contiguos; `MPI_Gatherv` de los resultados al proceso 0 |
+| Ejecutable | Paralelismo | Reparto de escenarios | Semana |
+|---|---|---|:---:|
+| `simulador_omp` | 1 proceso, P hilos (memoria compartida) | `#pragma omp parallel for schedule(dynamic, 16)` | S10 |
+| `simulador_mpi` | P procesos, 1 hilo cada uno (memoria distribuida) | Bloques contiguos; `MPI_Gatherv` de los resultados al proceso 0 | S10 |
+| `simulador_hibrido` | P procesos × H hilos (distribuida + compartida) | Bloques contiguos por proceso; `#pragma omp parallel for` local; `MPI_Gatherv` al 0 | S11 |
 
 Cada escenario r tiene su propio generador con semilla `splitmix64(semilla + r)`, así que su resultado no depende de quién lo calcule. Por eso **los CSV de resultados son idénticos byte a byte a los del secuencial** con cualquier número de hilos o procesos, y así se verifica que la paralelización es correcta. El diseño completo está en `docs/04_sprint3_paralelizacion.md`.
 
@@ -162,12 +166,14 @@ Se necesitan g++ con OpenMP y OpenMPI:
 Desde `MonteCarlo_Paralelo/`:
 
 ```bash
-make all secuencial      # simulador_omp, simulador_mpi y ../MonteCarlo_Secuencial/simulador
-make verificar           # CSV de OpenMP y MPI idénticos a los del secuencial
+make all secuencial      # simulador_omp, simulador_mpi, simulador_hibrido y ../MonteCarlo_Secuencial/simulador
+make verificar           # CSV de OpenMP, MPI e Híbrido idénticos a los del secuencial
 ./simulador_omp --config ../MonteCarlo_Secuencial/config_demostracion.ini --datos ../MonteCarlo_Secuencial/datos \
     --salida resultados_omp --hilos 4
 mpirun -np 4 ./simulador_mpi --config ../MonteCarlo_Secuencial/config_demostracion.ini --datos ../MonteCarlo_Secuencial/datos \
     --salida resultados_mpi
+mpirun -np 2 ./simulador_hibrido --config ../MonteCarlo_Secuencial/config_demostracion.ini --datos ../MonteCarlo_Secuencial/datos \
+    --salida resultados_hibrido --hilos 4
 ```
 
 - Sin `--hilos`, OpenMP usa `OMP_NUM_THREADS` o el número de CPU lógicas.
@@ -224,6 +230,14 @@ Ejemplo con `config_incertidumbre.ini` y 10 000 escenarios:
 - rango 2046–2065;
 - 0,75 % de escenarios sin inversión en el horizonte;
 - gráfico en `graficos_incertidumbre/06_distribucion_anio.png`.
+
+Ejemplo masivo con `config_incertidumbre.ini` y **1 000 000 de escenarios** (Sprint 3, S12 en `MonteCarlo_Secuencial/resultados_1000000/`):
+
+- **Tiempo de ejecución (Tp)**: 266,7 s (4,4 min) con `simulador_omp` (12 hilos);
+- **Throughput**: 3 749 escenarios/s (149 965 escenario-años/s);
+- **Distribución**: media 2054,50 años, desviación 2,30 años, rango extendido 2044–2065;
+- **Sin inversión en el horizonte**: 6 585 de 1 000 000 (0,66 %);
+- **Memoria pico (RSS)**: 27,5 MiB (escalabilidad O(1) de memoria por hilo).
 
 Los sigmas son supuestos didácticos.
 
@@ -291,6 +305,29 @@ go build -o simulador_go.exe ./cmd/simulador
 
 Usa las mismas ecuaciones demográficas, distribuciones Poisson y binomial exactas y formatos de salida. Go y C++ usan generadores y algoritmos aleatorios diferentes, así que los escenarios individuales no coinciden byte a byte. La comparación debe hacerse sobre la distribución agregada.
 
+## Clustering de escenarios (S13)
+
+Módulo de segmentación de los 10 000 escenarios con incertidumbre macro y de perfiles de edad simple en regímenes demográficos.
+
+```bash
+# Instalar dependencias
+pip install -r MonteCarlo_Clustering/requirements.txt
+
+# Clustering de escenarios (Parte A)
+python3 MonteCarlo_Clustering/scripts/clustering_escenarios.py \
+    MonteCarlo_Secuencial/resultados_incertidumbre MonteCarlo_Clustering/resultados_clustering \
+    --carpeta-graficos MonteCarlo_Clustering/graficos_clustering
+
+# Clustering de perfiles de edades simples (Parte B)
+python3 MonteCarlo_Clustering/scripts/clustering_edades.py \
+    MonteCarlo_Secuencial/datos_procesados MonteCarlo_Clustering/resultados_edades \
+    --carpeta-graficos MonteCarlo_Clustering/graficos_edades
+```
+
+- La carpeta de salida debe ser nueva: el script no sobrescribe resultados existentes.
+- Resultados y métricas en `MonteCarlo_Clustering/resultados_clustering/` y `resultados_edades/`.
+- Documento técnico y metodológico en `docs/06_clustering.md`.
+
 ## Documentación Scrum
 
 | Documento | Semana |
@@ -300,3 +337,4 @@ Usa las mismas ecuaciones demográficas, distribuciones Poisson y binomial exact
 | `docs/03_validacion_linea_base.md`: verificación, coherencia estadística, convergencia Monte Carlo y T1 | S9 |
 | `docs/04_sprint3_paralelizacion.md`: análisis de Foster, OpenMP, MPI, Docker, verificación y rendimiento | S10 |
 | `docs/05_registro_scrum.md`: Sprint Planning y Review de los sprints 1–3 | S4–S10 |
+| `docs/06_clustering.md`: clustering de escenarios (K-Means, Hierarchical, DBSCAN), perfiles de edad, análisis de sensibilidad y estabilidad | S13 |
