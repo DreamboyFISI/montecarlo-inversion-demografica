@@ -1,2 +1,0 @@
-version,procesos,hilos,escenarios,horizonte,segundos_carga,segundos_simulacion,segundos_total,segundos_cpu,ms_por_escenario,escenarios_por_segundo,escenario_anios_por_segundo,memoria_pico_mib,segundos_comunicacion
-openmp,1,4,10000,40,0.008297092,5.1472421,5.17033611,20.528225,0.51472421,1942.78796,77711.5185,4.875,0
