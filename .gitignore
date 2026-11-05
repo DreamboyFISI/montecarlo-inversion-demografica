@@ -1,0 +1,22 @@
+# Resultados generados por la interfaz (se conservan localmente)
+MonteCarlo_Secuencial/resultados_interfaz/
+MonteCarlo_Go/resultados_interfaz/
+
+# Ejecutables y binarios compilados
+MonteCarlo_Secuencial/simulador
+MonteCarlo_Secuencial/simulador.exe
+MonteCarlo_Go/simulador_go
+MonteCarlo_Go/simulador_go.exe
+MonteCarlo_Paralelo/simulador_omp
+MonteCarlo_Paralelo/simulador_mpi
+MonteCarlo_Paralelo/simulador_hibrido
+
+# Cachés de Python
+__pycache__/
+*.py[cod]
+
+# Archivos temporales habituales
+*.tmp
+*.log
+.DS_Store
+Thumbs.db

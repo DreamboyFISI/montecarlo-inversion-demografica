@@ -1,0 +1,11 @@
+# Formatos de texto compartidos entre Windows, WSL y Linux
+*.sh  text eol=lf
+*.csv text eol=lf
+*.svg text eol=lf
+
+# Archivos binarios: Git no debe intentar normalizarlos
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.exe binary
+*.pyc binary
