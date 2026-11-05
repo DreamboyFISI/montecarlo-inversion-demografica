@@ -1,0 +1,11 @@
+.git
+**/resultados*
+**/graficos*
+**/linea_base
+**/__pycache__
+**/*.exe
+**/simulador
+**/simulador_omp
+**/simulador_mpi
+MonteCarlo_Go
+MonteCarlo_Paralelo/rendimiento

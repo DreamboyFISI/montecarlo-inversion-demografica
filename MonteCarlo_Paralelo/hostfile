@@ -1,0 +1,5 @@
+# Nodos del cluster MPI de docker-compose.yml (2 nucleos asignados a cada contenedor).
+nodo1 slots=2
+nodo2 slots=2
+nodo3 slots=2
+nodo4 slots=2
