@@ -1,0 +1,51 @@
+ESTADO: PARAMETROS_CONFIGURADOS
+Resultados de uso academico basados en los parametros configurados.
+Version: C++17 + Hibrido (MPI + OpenMP), 4 procesos x 2 hilos.
+Poblacion inicial: 32706028
+Menores de 15: 7429471
+65 o mas: 3440272
+Escenarios completados: 10000000
+Horizonte: 40
+Con inversion: 9934770
+Sin inversion: 65230
+Probabilidad de inversion: 0.993477
+Probabilidad sin inversion: 0.006523
+Primer anio de inversion (escenarios con inversion): minimo 2043, media 2054.50413568, maximo 2065
+Segundos simulacion y escritura de escenarios: 2188.12605758
+Segundos hasta resumen: 2188.13575381
+--- Metricas de rendimiento (Hibrido MPI+OpenMP, Tp) ---
+Procesos x hilos: 4 x 2
+Segundos carga de datos: 0.000389
+Segundos simulacion y escritura de escenarios: 2188.126058
+Segundos hasta resumen (Tp total): 2188.135754
+Segundos de CPU del proceso: 17280.743762
+Milisegundos por escenario: 0.218813
+Escenarios por segundo: 4570.120613
+Escenario-anios por segundo: 182804.824527
+Memoria pico (MiB): 254.003906
+Segundos de espera + comunicacion (MPI_Gatherv): 12.199820
+--- Distribucion del primer anio de inversion p(T = y) ---
+2043         1  0.0000  
+2044         6  0.0000  
+2045        54  0.0000  
+2046       386  0.0000  
+2047      2521  0.0003  
+2048     13576  0.0014  
+2049     54748  0.0055  #
+2050    176889  0.0177  ####
+2051    533028  0.0533  ############
+2052   1062971  0.1063  #######################
+2053   1581251  0.1581  ###################################
+2054   1811857  0.1812  ########################################
+2055   1661848  0.1662  #####################################
+2056   1285829  0.1286  ############################
+2057    802561  0.0803  ##################
+2058    457015  0.0457  ##########
+2059    248541  0.0249  #####
+2060    132663  0.0133  ###
+2061     44846  0.0045  #
+2062     27380  0.0027  #
+2063     17676  0.0018  
+2064     11538  0.0012  
+2065      7585  0.0008  
+Media 2054.50, desviacion 2.30 anios, rango 2043-2065; sin inversion: 65230 de 10000000 (0.65 %)

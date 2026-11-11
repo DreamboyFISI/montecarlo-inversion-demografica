@@ -2,6 +2,11 @@
 *.sh  text eol=lf
 *.csv text eol=lf
 *.svg text eol=lf
+# Los usa Linux dentro de la imagen Docker: con CRLF, OpenMPI no puede leer el hostfile
+hostfile text eol=lf
+Makefile text eol=lf
+Dockerfile text eol=lf
+*.ini text eol=lf
 
 # Archivos binarios: Git no debe intentar normalizarlos
 *.png binary
