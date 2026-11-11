@@ -1,12 +1,12 @@
 """Interfaz de escritorio y panel de presentacion para la simulacion Monte Carlo y Clustering.
-Proyecto: montecarlo-inversion-demografica (Semana 11 y Semana 13)
+Proyecto: montecarlo-inversion-demografica (Semanas 11 y 12)
 
 Uso desde la raiz o desde MonteCarlo_Secuencial:
     python MonteCarlo_Secuencial/interfaz.py
 
 Permite presentar:
 1. Simulacion Monte Carlo: secuencial, OpenMP, MPI, Hibrido (S11) y Go.
-2. Segmentacion y Mineria de Datos (Clustering S13): perfiles demograficos,
+2. Segmentacion y Mineria de Datos (Clustering S11-S12): perfiles demograficos,
    graficos de dispersion de factores, boxplots de anio de cruce, arbol de decision
    explicable y agrupamiento de edades simples (Parte B).
 3. Metricas de rendimiento, speedup y arquitectura Scrum.
@@ -86,7 +86,7 @@ def ruta_a_wsl(p: Path) -> str:
 class InterfazMonteCarlo(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title("Inversión Demográfica del Perú — Monte Carlo, Paralelismo y Clustering (S11–S13)")
+        self.title("Inversión Demográfica del Perú — Monte Carlo, Paralelismo y Clustering (S11–S12)")
         self.geometry("1280x830")
         self.minsize(1100, 720)
         self.configure(bg=FONDO)
@@ -144,7 +144,7 @@ class InterfazMonteCarlo(tk.Tk):
         ).pack(anchor="w")
         tk.Label(
             info_frame,
-            text="Programación Paralela y Concurrente · C++17 (Secuencial, OpenMP, MPI, Híbrido S11) + Clustering de Escenarios (S13)",
+            text="Programación Paralela y Concurrente · C++17 (Secuencial, OpenMP, MPI, Híbrido S11) + Clustering de Escenarios (S11–S12)",
             font=("Segoe UI", 9),
             bg=BLANCO,
             fg=GRIS
@@ -172,9 +172,9 @@ class InterfazMonteCarlo(tk.Tk):
         self.notebook.add(self.tab_simulacion, text="  1. Simulación Monte Carlo (S7–S11)  ")
         self._construir_tab_simulacion(self.tab_simulacion)
 
-        # Pestaña 2: Mineria de Datos & Clustering (Semana 13)
+        # Pestaña 2: Mineria de Datos & Clustering (Semanas 11-12)
         self.tab_clustering = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab_clustering, text="  2. Segmentación & Clustering (S13)  ")
+        self.notebook.add(self.tab_clustering, text="  2. Segmentación & Clustering (S11–S12)  ")
         self._construir_tab_clustering(self.tab_clustering)
 
         # Pestaña 3: Resumen Ejecutivo & Cronograma Scrum
@@ -288,7 +288,7 @@ class InterfazMonteCarlo(tk.Tk):
             self.metricas_vars[nombre] = var
 
     # =========================================================================
-    # PESTAÑA 2: CLUSTERING Y REGÍMENES DEMOGRÁFICOS (S13)
+    # PESTAÑA 2: CLUSTERING Y REGÍMENES DEMOGRÁFICOS (S11-S12)
     # =========================================================================
     def _construir_tab_clustering(self, padre: ttk.Frame) -> None:
         cuerpo = ttk.Panedwindow(padre, orient="horizontal")
@@ -475,8 +475,9 @@ class InterfazMonteCarlo(tk.Tk):
             ("Sprint 2", "S9", "Validación estadística y línea base T1 (R=10³, 10⁴, 10⁵)", "✔ Hecho"),
             ("Sprint 3", "S10", "Paralelización con OpenMP (simulador_omp) y MPI + Docker (simulador_mpi)", "✔ Hecho"),
             ("Sprint 3", "S11", "Integración híbrida MPI + OpenMP (simulador_hibrido, PB-08)", "✔ Implementado"),
-            ("Sprint 3", "S12", "Ejecución masiva de 1 millón de escenarios (R = 10⁶)", "✔ Ejecutado y Disponible"),
-            ("Sprint 4", "S13", "Modelamiento Avanzado: Clustering de Escenarios y Edades (docs/06)", "✔ Implementado"),
+            ("Sprint 3", "S11–S12", "Modelamiento Avanzado: Clustering de Escenarios y Edades (docs/06)", "✔ Implementado"),
+            ("Sprint 3", "S12", "Ejecución masiva de 10 millones de escenarios (R = 10⁷, híbrido 4 × 2)", "✔ Ejecutado y Disponible"),
+            ("Sprint 4", "S13", "Análisis de resultados y rendimiento (PB-10)", "⏳ Pendiente"),
             ("Sprint 4", "S14", "Informe final, correcciones y ensayo de diapositivas", "⏳ En preparación"),
             ("Cierre", "S15", "Presentación final del proyecto", "📅 Programado"),
         ]

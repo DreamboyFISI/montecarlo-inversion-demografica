@@ -28,7 +28,7 @@ Un ítem está **hecho** cuando:
 
 ## Backlog priorizado
 
-Prioridad: 1 = más alta. Estimación en puntos de historia (Fibonacci). El estado corresponde al cierre de la semana 10.
+Prioridad: 1 = más alta. Estimación en puntos de historia (Fibonacci). El estado corresponde al cierre de la semana 12.
 
 | ID | Historia de usuario | Prioridad | Puntos | Sprint | Semana | Estado |
 |---|---|:-:|:-:|:-:|:-:|---|
@@ -40,12 +40,13 @@ Prioridad: 1 = más alta. Estimación en puntos de historia (Fibonacci). El esta
 | PB-06 | Como usuario, quiero una versión OpenMP que reparta los escenarios entre hilos con los mismos resultados que la secuencial | 1 | 5 | 3 | S10 | Hecho |
 | PB-07 | Como usuario, quiero una versión MPI ejecutable en un clúster de contenedores Docker con los mismos resultados que la secuencial | 1 | 8 | 3 | S10 | Hecho |
 | PB-08 | Como usuario, quiero una versión híbrida MPI + OpenMP (procesos entre nodos, hilos dentro de cada nodo) | 1 | 5 | 3 | S11 | Hecho (simulador_hibrido) |
-| PB-09 | Como investigador, quiero ejecutar 10 millones de escenarios y obtener la distribución del año de inversión | 1 | 5 | 3 | S12 | Pendiente |
+| PB-09 | Como investigador, quiero ejecutar 10 millones de escenarios y obtener la distribución del año de inversión | 1 | 5 | 3 | S12 | Hecho (`MonteCarlo_Paralelo/resultados_10000000/`) |
 | PB-10 | Como evaluador, quiero un análisis de resultados y de rendimiento (speedup, eficiencia, Karp-Flatt, Amdahl) | 2 | 5 | 4 | S13 | Pendiente (S10 deja el script y la primera medición) |
 | PB-11 | Como docente, quiero un informe final con correcciones | 2 | 5 | 4 | S13–S14 | Pendiente |
 | PB-12 | Como equipo, quiero diapositivas y un ensayo de la presentación | 3 | 3 | 4 | S14 | Pendiente |
 | PB-13 | Como usuario, quiero una interfaz gráfica para lanzar simulaciones y ver la distribución | 3 | 3 | — | — | Hecho (extra: `interfaz.py`) |
 | PB-14 | Como equipo, quiero una implementación alternativa en Go para contrastar lenguaje, tiempo y memoria | 4 | 3 | — | — | Hecho (extra: `MonteCarlo_Go`) |
+| PB-15 | Como analista, quiero agrupar los escenarios simulados (K-Means, Ward, DBSCAN) para identificar regímenes de inversión demográfica | 2 | 5 | 3 | S11–S12 | Hecho (`MonteCarlo_Clustering`, `docs/06_clustering.md`) |
 
 ## Criterios de aceptación
 

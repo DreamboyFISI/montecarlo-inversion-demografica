@@ -1,6 +1,6 @@
-# Registro de ceremonias Scrum (S4–S10)
+# Registro de ceremonias Scrum (S4–S12)
 
-Calendario según el cronograma: Sprint 1 = S4–S6; Sprint 2 = S7–S9, con pausa en S8 por exámenes parciales; Sprint 3 = S10–S12; Sprint 4 = S13–S14; presentación en S15. El Daily Scrum es una reunión breve en días de trabajo; no hay reuniones en S8.
+Calendario según el cronograma (`docs/cronograma.png`): Sprint 1 = S4–S6; Sprint 2 = S7–S9, con pausa en S8 por exámenes parciales; Sprint 3 = S10–S12; Sprint 4 = S13–S14; presentación en S15. El Daily Scrum es una reunión breve en días de trabajo; no hay reuniones en S8.
 
 > Las secciones **[completar por el equipo]** recogen lo que se dijo en cada reunión (asistentes, impedimentos, acuerdos de la retrospectiva). Este registro solo documenta lo verificable en el repositorio: objetivos, ítems e incrementos.
 
@@ -56,6 +56,7 @@ Calendario según el cronograma: Sprint 1 = S4–S6; Sprint 2 = S7–S9, con pau
 - **Sprint backlog:**
   - S10: PB-06 Paralelización con OpenMP y PB-07 MPI y contenedores Docker.
   - S11: PB-08 Integración MPI + OpenMP.
+  - S11–S12: PB-15 Clustering de escenarios (agregado al cronograma durante el sprint).
   - S12: PB-09 Ejecución de 10 millones de escenarios.
 - **Criterio transversal:** la salida debe ser idéntica byte a byte a la secuencial con la misma semilla.
 - Asistentes y capacidad: **[completar por el equipo]**
@@ -63,4 +64,23 @@ Calendario según el cronograma: Sprint 1 = S4–S6; Sprint 2 = S7–S9, con pau
 ### Avance al cierre de S11
 
 - PB-06 (OpenMP), PB-07 (MPI + Docker) y PB-08 (Híbrido MPI + OpenMP) **hechos**. El detalle está en `docs/04_sprint3_paralelizacion.md`.
+- PB-15 (Clustering de escenarios, S11–S12): implementado; el detalle está en `docs/06_clustering.md`.
 - Sprint Review y Retrospectiva del Sprint 3: en S12 (tras la ejecución masiva de 10 millones de escenarios).
+
+### Sprint Review y Retrospectiva (S12)
+
+**Incremento demostrado:**
+
+- `MonteCarlo_Paralelo/src/main_openmp.cpp`, `main_mpi.cpp` y `main_hibrido.cpp`: las tres versiones paralelas. `make verificar` confirma que sus CSV son idénticos byte a byte a los del secuencial (20 de 20 comparaciones OK, ejecutado en el clúster el 11/11/2026).
+- Clúster MPI de 4 nodos con Docker Compose; `docker/ejecutar_cluster.sh` acepta ahora un cuarto argumento (hilos por proceso) para lanzar la versión híbrida.
+- **PB-09, 10 millones de escenarios** (`MonteCarlo_Paralelo/resultados_10000000/`): híbrido con 4 procesos × 2 hilos sobre los 4 nodos, `config_incertidumbre.ini`, semilla 12345.
+  - Tiempo de pared: 2 188 s (36,5 min); 4 570 escenarios/s; CPU/pared = 7,90 de 8 núcleos; memoria pico 254 MiB; espera + comunicación 12,2 s (0,56 %).
+  - Año de inversión: media 2054,504, desviación 2,304 años, rango 2043–2065; error estándar de la media 0,00073 años (IC 95 %: 2054,5027–2054,5056).
+  - Sin inversión en el horizonte: 65 230 de 10 000 000 (0,652 %).
+  - El primer millón de escenarios coincide byte a byte con la corrida de 1 000 000 hecha con OpenMP.
+- PB-15, clustering de escenarios (`MonteCarlo_Clustering/`, `docs/06_clustering.md`).
+- Objetivo del sprint (10 millones de escenarios con MPI + OpenMP sin cambiar los resultados): **cumplido**.
+
+**Pasa al Sprint 4:** PB-10 (análisis de resultados y rendimiento), PB-11 (informe final) y PB-12 (diapositivas y ensayo).
+
+**Retrospectiva:** **[completar por el equipo]**
