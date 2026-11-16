@@ -1,6 +1,6 @@
-# Clustering de Escenarios Demográficos y Perfiles de Edad (S13)
+# Clustering de Escenarios Demográficos y Perfiles de Edad (S11–S12)
 
-**Módulo:** Modelamiento Avanzado — Clustering (Semana 13)  
+**Módulo:** Modelamiento Avanzado — Clustering (Semanas 11–12)  
 **Curso:** Programación Paralela y Concurrente / Minería de Datos  
 **Repositorio:** `montecarlo-inversion-demografica`  
 **Estado de los datos:** `PARAMETROS_CONFIGURADOS` (Los resultados dependen de supuestos didácticos y no constituyen un pronóstico demográfico oficial del Perú).
@@ -171,9 +171,9 @@ Se construyó una matriz demográfica sobre las edades simples ($a = 0, \dots, 1
 
 ---
 
-## 9. Figuras Recomendadas para las Diapositivas (Semana 13)
+## 9. Figuras Recomendadas para las Diapositivas (Semanas 11–12)
 
-Para la sustentación oral del entregable de la Semana 13, se recomienda seleccionar las siguientes 4 láminas clave guardadas en `MonteCarlo_Clustering/graficos_clustering/`:
+Para la sustentación oral del entregable de las Semanas 11–12, se recomienda seleccionar las siguientes 4 láminas clave guardadas en `MonteCarlo_Clustering/graficos_clustering/`:
 
 1. **`04_scatter_factores_clusters.png` (Lámina de Segmentación Central):** Muestra el plano $\text{factor\_fecundidad}$ vs $\text{factor\_mortalidad}$ coloreado por los tres regímenes de inversión más los puntos rojos correspondientes a los 75 escenarios sin cruce.
 2. **`05_distribucion_anio_clusters.png` (Lámina de Impacto Temporal):** Boxplots comparativos del año de cruce para Inversión Temprana (2052.5), Central (2054.2) y Tardía (2056.8), demostrando la separación temporal lograda.
