@@ -15,7 +15,7 @@ Proyecto del curso Programación Paralela y Concurrente. Abordamos la paraleliza
 7. [Incertidumbre macro por escenario](#incertidumbre-macro-por-escenario)
 8. [Métricas de rendimiento](#métricas-de-rendimiento)
 9. [Versión Go](#versión-go)
-10. [Clustering de escenarios (S13)](#clustering-de-escenarios-s13)
+10. [Clustering de escenarios (S11–S12)](#clustering-de-escenarios-s11s12)
 11. [Documentación Scrum](#documentación-scrum)
 
 ## Estructura del repositorio
@@ -52,9 +52,10 @@ Proyecto del curso Programación Paralela y Concurrente. Abordamos la paraleliza
 | `MonteCarlo_Paralelo/scripts/rendimiento.py` | Speedup, eficiencia, costo, Karp-Flatt y Amdahl → `rendimiento/` | S10 |
 | `MonteCarlo_Paralelo/docker/Dockerfile` | Imagen Ubuntu 24.04 con g++, OpenMPI y SSH; compila las tres versiones y corre las pruebas | S10 |
 | `MonteCarlo_Paralelo/docker-compose.yml`, `hostfile` | Clúster MPI de 4 nodos (contenedores) con 2 CPU cada uno | S10 |
-| `MonteCarlo_Paralelo/docker/ejecutar_cluster.sh` | Lanza `mpirun` en el clúster; resultados en `resultados_cluster/` | S10 |
+| `MonteCarlo_Paralelo/docker/ejecutar_cluster.sh` | Lanza `mpirun` en el clúster (MPI puro o híbrido); resultados en `resultados_cluster/` | S10–S12 |
+| `MonteCarlo_Paralelo/resultados_10000000/` | Resumen, distribución, gráfico y métricas de la corrida de 10 millones de escenarios | S12 |
 | `MonteCarlo_Go/` | Implementación secuencial alternativa en Go | extra |
-| `MonteCarlo_Clustering/` | Segmentación de escenarios (K-Means, Ward, DBSCAN) y perfiles de edad con métricas y gráficos | S13 |
+| `MonteCarlo_Clustering/` | Segmentación de escenarios (K-Means, Ward, DBSCAN) y perfiles de edad con métricas y gráficos | S11–S12 |
 
 ## Inicio rápido con Docker
 
@@ -239,6 +240,23 @@ Ejemplo masivo con `config_incertidumbre.ini` y **1 000 000 de escenarios** (Spr
 - **Sin inversión en el horizonte**: 6 585 de 1 000 000 (0,66 %);
 - **Memoria pico (RSS)**: 27,5 MiB (escalabilidad O(1) de memoria por hilo).
 
+Ejecución de **10 000 000 de escenarios** (PB-09, S12) con `simulador_hibrido` en el clúster Docker, 4 procesos × 2 hilos (`MonteCarlo_Paralelo/resultados_10000000/`):
+
+```bash
+cd MonteCarlo_Paralelo
+docker compose up -d --build
+./docker/ejecutar_cluster.sh 4 10000000 config_incertidumbre.ini 2   # el cuarto argumento son los hilos por proceso
+```
+
+- **Tiempo de ejecución (Tp)**: 2 188 s (36,5 min); CPU/pared = 7,90 con 8 núcleos;
+- **Throughput**: 4 570 escenarios/s;
+- **Distribución**: media 2054,504 años, desviación 2,304 años, rango 2043–2065;
+- **Error estándar de la media**: 0,00073 años (IC 95 %: 2054,5027–2054,5056);
+- **Sin inversión en el horizonte**: 65 230 de 10 000 000 (0,652 %);
+- **Memoria pico (RSS)**: 254 MiB (el proceso 0 reúne los 10⁷ resultados).
+
+Los CSV por escenario de esta corrida (149 MB y 327 MB) no se versionan; el detalle está en `docs/04_sprint3_paralelizacion.md`, sección 9.
+
 Los sigmas son supuestos didácticos.
 
 ## Métricas de rendimiento
@@ -305,7 +323,7 @@ go build -o simulador_go.exe ./cmd/simulador
 
 Usa las mismas ecuaciones demográficas, distribuciones Poisson y binomial exactas y formatos de salida. Go y C++ usan generadores y algoritmos aleatorios diferentes, así que los escenarios individuales no coinciden byte a byte. La comparación debe hacerse sobre la distribución agregada.
 
-## Clustering de escenarios (S13)
+## Clustering de escenarios (S11–S12)
 
 Módulo de segmentación de los 10 000 escenarios con incertidumbre macro y de perfiles de edad simple en regímenes demográficos.
 
@@ -335,6 +353,7 @@ python3 MonteCarlo_Clustering/scripts/clustering_edades.py \
 | `docs/01_product_backlog.md`: visión, roles, Definición de Hecho, backlog priorizado y criterios de aceptación | S4 |
 | `docs/02_diseno_modelo_probabilistico.md`: estado, transiciones, incertidumbre macro, estimadores, semillas y supuestos | S5–S6 |
 | `docs/03_validacion_linea_base.md`: verificación, coherencia estadística, convergencia Monte Carlo y T1 | S9 |
-| `docs/04_sprint3_paralelizacion.md`: análisis de Foster, OpenMP, MPI, Docker, verificación y rendimiento | S10 |
-| `docs/05_registro_scrum.md`: Sprint Planning y Review de los sprints 1–3 | S4–S10 |
-| `docs/06_clustering.md`: clustering de escenarios (K-Means, Hierarchical, DBSCAN), perfiles de edad, análisis de sensibilidad y estabilidad | S13 |
+| `docs/04_sprint3_paralelizacion.md`: análisis de Foster, OpenMP, MPI, Docker, verificación, rendimiento y ejecución de 10 millones de escenarios | S10–S12 |
+| `docs/05_registro_scrum.md`: Sprint Planning y Review de los sprints 1–3 | S4–S12 |
+| `docs/06_clustering.md`: clustering de escenarios (K-Means, Hierarchical, DBSCAN), perfiles de edad, análisis de sensibilidad y estabilidad | S11–S12 |
+| `docs/cronograma.png`: cronograma Scrum del proyecto; se regenera con `python docs/generar_cronograma.py` | S4–S15 |

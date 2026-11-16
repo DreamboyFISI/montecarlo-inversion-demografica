@@ -1,4 +1,4 @@
-# Sprint 3, semana 10: paralelización con OpenMP, MPI y contenedores Docker
+# Sprint 3 (S10–S12): paralelización con OpenMP, MPI y contenedores Docker
 
 Código en `MonteCarlo_Paralelo/`; instrucciones de compilación y ejecución en el `README.md` de la raíz.
 
@@ -135,6 +135,38 @@ Implementada en `MonteCarlo_Paralelo/src/main_hibrido.cpp` (`simulador_hibrido`)
 - **Correctitud y reproducibilidad:**  
   Al compartir la misma fórmula de semillas `splitmix64(semilla + r)`, `simulador_hibrido` produce resultados byte a byte idénticos a los del secuencial, OpenMP y MPI puro para cualquier combinación $P \times H$.
 
-## 9. Pendiente para S12
+## 9. Ejecución de 10 millones de escenarios (S12)
 
-- **S12, R = 10⁷.** Con 10⁷ escenarios, `escenarios.csv` ocupa ≈ 190 MB. Hay que evaluar si se escribe completo o solo el histograma, para que la parte secuencial no limite el speedup (Amdahl).
+Corrida de PB-09 en el clúster Docker de 4 nodos (2 CPU por nodo), con un proceso MPI por nodo y 2 hilos OpenMP por proceso:
+
+```bash
+cd MonteCarlo_Paralelo
+docker compose up -d --build
+./docker/ejecutar_cluster.sh 4 10000000 config_incertidumbre.ini 2   # procesos, escenarios, config, hilos
+```
+
+El cuarto argumento hace que el script use `simulador_hibrido` con `--bind-to none` y `--hilos`. Los archivos pequeños de la corrida están en `MonteCarlo_Paralelo/resultados_10000000/`.
+
+| Métrica | Valor |
+|---|---|
+| Procesos × hilos | 4 × 2 (8 núcleos) |
+| Tiempo de pared (Tp) | 2 188,1 s (36,5 min) |
+| Tiempo de CPU | 17 280,7 s (CPU/pared = 7,90) |
+| Rendimiento | 4 570 escenarios/s (0,219 ms por escenario) |
+| Memoria pico por proceso | 254 MiB |
+| Espera + comunicación (`MPI_Gatherv`) | 12,2 s (0,56 % de Tp) |
+
+Resultado estadístico (9 934 770 escenarios con inversión):
+
+- media del año de inversión 2054,504, desviación 2,304 años, rango 2043–2065;
+- error estándar de la media 0,00073 años; IC 95 %: 2054,5027–2054,5056;
+- sin inversión en el horizonte: 65 230 de 10 000 000 (0,652 %; error estándar 0,0025 puntos porcentuales);
+- probabilidad acumulada: 2,5 % a 2050, 52,4 % a 2054, 89,9 % a 2057 y 98,3 % a 2060.
+
+Observaciones:
+
+1. **Correctitud.** El primer millón de filas de `escenarios.csv` y `factores_escenarios.csv` es idéntico byte a byte al de la corrida de 1 000 000 hecha con OpenMP (`MonteCarlo_Secuencial/resultados_1000000/`), y `make verificar` pasa 20 de 20 comparaciones en el clúster.
+2. **Escritura completa.** Se escribieron los CSV completos: `escenarios.csv` (149 MB) y `factores_escenarios.csv` (327 MB). No se versionan porque superan el límite de 100 MB por archivo de GitHub; quedan en `resultados_cluster/` (ignorada por git) y se regeneran con el comando de arriba.
+3. **Memoria.** El pico sube de ≈ 15 MiB a 254 MiB porque el proceso 0 reúne los 10⁷ resultados antes de escribirlos; sigue siendo holgado para este equipo.
+4. **Speedup.** No se midió T1 con R = 10⁷ (serían varias horas), así que no se reporta un speedup directo de esta corrida. El dato medido es CPU/pared = 7,90: los 8 núcleos trabajaron casi todo el tiempo. El análisis de speedup y eficiencia queda para PB-10 (S13).
+5. **Finales de línea.** En Windows, `hostfile` se extraía con CRLF y OpenMPI no podía leerlo dentro del contenedor. `.gitattributes` fija ahora LF para `hostfile`, `Makefile`, `Dockerfile` y `*.ini`.
