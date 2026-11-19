@@ -20,3 +20,11 @@ __pycache__/
 *.log
 .DS_Store
 Thumbs.db
+
+# Campanas e informes locales de S13 (no subir mediciones de un equipo como valores universales)
+/salidas_s13/
+
+# Metadatos S13 con rutas completas de auditoria: no publicarlos accidentalmente
+**/procedencia.json
+**/analisis.json
+**/comparacion.json

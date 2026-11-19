@@ -28,7 +28,9 @@ Un ítem está **hecho** cuando:
 
 ## Backlog priorizado
 
-Prioridad: 1 = más alta. Estimación en puntos de historia (Fibonacci). El estado corresponde al cierre de la semana 12.
+Prioridad: 1 = más alta. Estimación en puntos de historia (Fibonacci). Estado de S12,
+actualizado para la implementación de PB-10 en S13. La campaña final del equipo de
+presentación debe ejecutarse allí y conservarse como evidencia.
 
 | ID | Historia de usuario | Prioridad | Puntos | Sprint | Semana | Estado |
 |---|---|:-:|:-:|:-:|:-:|---|
@@ -41,7 +43,7 @@ Prioridad: 1 = más alta. Estimación en puntos de historia (Fibonacci). El esta
 | PB-07 | Como usuario, quiero una versión MPI ejecutable en un clúster de contenedores Docker con los mismos resultados que la secuencial | 1 | 8 | 3 | S10 | Hecho |
 | PB-08 | Como usuario, quiero una versión híbrida MPI + OpenMP (procesos entre nodos, hilos dentro de cada nodo) | 1 | 5 | 3 | S11 | Hecho (simulador_hibrido) |
 | PB-09 | Como investigador, quiero ejecutar 10 millones de escenarios y obtener la distribución del año de inversión | 1 | 5 | 3 | S12 | Hecho (`MonteCarlo_Paralelo/resultados_10000000/`) |
-| PB-10 | Como evaluador, quiero un análisis de resultados y de rendimiento (speedup, eficiencia, Karp-Flatt, Amdahl) | 2 | 5 | 4 | S13 | Pendiente (S10 deja el script y la primera medición) |
+| PB-10 | Como evaluador, quiero un análisis de resultados y de rendimiento (speedup, eficiencia, Karp-Flatt, Amdahl) | 2 | 5 | 4 | S13 | Implementado (`MonteCarlo_Analisis`, interfaz y pruebas; campaña final pendiente en el equipo de entrega) |
 | PB-11 | Como docente, quiero un informe final con correcciones | 2 | 5 | 4 | S13–S14 | Pendiente |
 | PB-12 | Como equipo, quiero diapositivas y un ensayo de la presentación | 3 | 3 | 4 | S14 | Pendiente |
 | PB-13 | Como usuario, quiero una interfaz gráfica para lanzar simulaciones y ver la distribución | 3 | 3 | — | — | Hecho (extra: `interfaz.py`) |
@@ -65,3 +67,11 @@ Prioridad: 1 = más alta. Estimación en puntos de historia (Fibonacci). El esta
 **PB-08 Híbrido.** Con p procesos × h hilos se obtienen CSV idénticos al secuencial y se compara contra MPI puro con el mismo total de núcleos.
 
 **PB-09 10⁷ escenarios.** La corrida termina, `metricas.csv` registra el tiempo y la memoria, y se reporta el error estándar de la media del año de inversión.
+
+**PB-10 Análisis S13.** Cada ejecución se interpreta a partir de sus propios CSV,
+sin atribuirle el hardware actual si no se conoce su procedencia. Se distinguen
+dispersión, error Monte Carlo y censura temporal. Las campañas locales conservan
+procedencia y repeticiones, verifican equivalencia de los C++ y solo calculan
+S/E/costo/Karp–Flatt/Amdahl con un T1 compatible. Se muestran exclusiones, límites
+y resultados no disponibles; el análisis puede exportarse y pasa las pruebas
+de `tests/test_analisis_s13.py`. Metodología: `docs/07_analisis_s13.md`.

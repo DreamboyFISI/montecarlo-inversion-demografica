@@ -1,5 +1,5 @@
 """Interfaz de escritorio y panel de presentacion para la simulacion Monte Carlo y Clustering.
-Proyecto: montecarlo-inversion-demografica (Semanas 11 y 12)
+Proyecto: montecarlo-inversion-demografica (hasta S13)
 
 Uso desde la raiz o desde MonteCarlo_Secuencial:
     python MonteCarlo_Secuencial/interfaz.py
@@ -9,16 +9,15 @@ Permite presentar:
 2. Segmentacion y Mineria de Datos (Clustering S11-S12): perfiles demograficos,
    graficos de dispersion de factores, boxplots de anio de cruce, arbol de decision
    explicable y agrupamiento de edades simples (Parte B).
-3. Metricas de rendimiento, speedup y arquitectura Scrum.
+3. Analisis S13 por ejecucion, campanas comparables y exportacion de informes.
+4. Arquitectura Scrum.
 """
 
 from __future__ import annotations
 
 import csv
 import math
-import os
 import queue
-import shlex
 import subprocess
 import sys
 import threading
@@ -35,9 +34,14 @@ import matplotlib.image as mpimg
 
 BASE = Path(__file__).resolve().parent
 ROOT = BASE.parent
-PARALELO_BASE = ROOT / "MonteCarlo_Paralelo"
 GO_BASE = ROOT / "MonteCarlo_Go"
 CLUSTERING_BASE = ROOT / "MonteCarlo_Clustering"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from MonteCarlo_Analisis.panel import PanelAnalisis
+from MonteCarlo_Analisis.procedencia import ruta_visible
+from MonteCarlo_Analisis.resultados import analizar_ejecucion
 
 # Paleta cromatica moderna y profesional
 AZUL = "#1E5F8A"
@@ -51,14 +55,6 @@ GRIS = "#546E7A"
 BLANCO = "#FFFFFF"
 NARANJA = "#FB8C00"
 ROJO = "#E53935"
-
-MS_REFERENCIA = {
-    "C++ Secuencial": 2.17,
-    "C++ OpenMP": 0.35,
-    "C++ MPI": 0.60,
-    "C++ Híbrido (MPI+OpenMP)": 0.31,
-    "Go": 2.19,
-}
 
 
 def entero_positivo(texto: str) -> int:
@@ -86,7 +82,7 @@ def ruta_a_wsl(p: Path) -> str:
 class InterfazMonteCarlo(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title("Inversión Demográfica del Perú — Monte Carlo, Paralelismo y Clustering (S11–S12)")
+        self.title("Inversión Demográfica del Perú — Monte Carlo, Paralelismo y Análisis S13")
         self.geometry("1280x830")
         self.minsize(1100, 720)
         self.configure(bg=FONDO)
@@ -98,6 +94,8 @@ class InterfazMonteCarlo(tk.Tk):
         self.escenarios_actual = 0
         self.proceso: subprocess.Popen[str] | None = None
         self.cola: queue.Queue[tuple[str, object]] = queue.Queue()
+        self.trabajo_activo = False
+        self.distro_var = tk.StringVar(value="Ubuntu")
 
         self._configurar_estilos()
         self._construir_interfaz()
@@ -106,7 +104,7 @@ class InterfazMonteCarlo(tk.Tk):
         # Carga automatica inicial si existen resultados
         ejemplo = BASE / "resultados_incertidumbre"
         if ejemplo.exists():
-            self.after(200, lambda: self.cargar_resultados(ejemplo))
+            self.after(200, lambda: self.cargar_resultados(ejemplo) if self.carpeta_actual is None else None)
         self.after(350, self._cargar_datos_clustering)
 
     def _configurar_estilos(self) -> None:
@@ -174,13 +172,17 @@ class InterfazMonteCarlo(tk.Tk):
 
         # Pestaña 2: Mineria de Datos & Clustering (Semanas 11-12)
         self.tab_clustering = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab_clustering, text="  2. Segmentación & Clustering (S11–S12)  ")
+        self.notebook.add(self.tab_clustering, text="  2. Clustering de referencia (S11–S12)  ")
         self._construir_tab_clustering(self.tab_clustering)
 
         # Pestaña 3: Resumen Ejecutivo & Cronograma Scrum
         self.tab_scrum = ttk.Frame(self.notebook)
         self.notebook.add(self.tab_scrum, text="  3. Arquitectura y Cronograma Scrum  ")
         self._construir_tab_scrum(self.tab_scrum)
+
+        self.panel_analisis = PanelAnalisis(self.notebook, self.seleccionar_resultados,
+                                           self._lanzar_campana, self.config_var, self.distro_var)
+        self.notebook.add(self.panel_analisis, text="  4. Análisis S13  ")
 
     # =========================================================================
     # PESTAÑA 1: SIMULACION MONTE CARLO
@@ -203,6 +205,15 @@ class InterfazMonteCarlo(tk.Tk):
         selector_motor = ttk.Combobox(lateral, textvariable=self.motor_var, values=motores, state="readonly")
         selector_motor.pack(fill="x", pady=(3, 10))
         selector_motor.bind("<<ComboboxSelected>>", lambda _e: self._actualizar_estimacion())
+
+        recursos = ttk.Frame(lateral, style="Card.TFrame")
+        recursos.pack(fill="x", pady=(0, 6))
+        self.procesos_var = tk.StringVar(value="2")
+        self.hilos_var = tk.StringVar(value="2")
+        ttk.Label(recursos, text="Procesos MPI:", background=BLANCO).pack(side="left")
+        ttk.Spinbox(recursos, from_=1, to=4096, width=4, textvariable=self.procesos_var).pack(side="left")
+        ttk.Label(recursos, text=" Hilos:", background=BLANCO).pack(side="left")
+        ttk.Spinbox(recursos, from_=1, to=4096, width=4, textvariable=self.hilos_var).pack(side="left")
 
         ttk.Label(lateral, text="Configuración (.ini):", background=BLANCO).pack(anchor="w")
         self.config_var = tk.StringVar(value="config_incertidumbre.ini")
@@ -246,8 +257,9 @@ class InterfazMonteCarlo(tk.Tk):
         ttk.Label(lateral, text="HIPÓTESIS DEMOGRÁFICA", style="CardTitle.TLabel").pack(anchor="w", pady=(0, 4))
         tk.Label(
             lateral,
-            text="Inversión: Primer año donde A (≥65 años) > J (<15 años). "
-                 "Con σ=0 ocurre en 2054. Con incertidumbre macro σ_f=0.05 y σ_m=0.015 se genera la distribución estocástica.",
+            text="Inversión: primer año donde A (≥65 años) > J (<15 años); el empate no cuenta. "
+                 "El resultado depende de los datos y de la configuración seleccionada. "
+                 "El análisis S13 se actualiza al terminar o cargar una ejecución.",
             bg=BLANCO, fg=GRIS, justify="left", wraplength=240, font=("Segoe UI", 8)
         ).pack(fill="x")
 
@@ -300,6 +312,11 @@ class InterfazMonteCarlo(tk.Tk):
         cuerpo.add(panel_visual, weight=1)
 
         ttk.Label(panel_control, text="VISOR DE MINERÍA DE DATOS", style="CardTitle.TLabel").pack(anchor="w", pady=(0, 8))
+        ttk.Label(panel_control,
+                  text="Referencia S11–S12: resultados_incertidumbre (10 000 escenarios). "
+                       "Los indicadores y perfiles documentados aquí no pertenecen automáticamente "
+                       "a la ejecución seleccionada. Su análisis actual está en la pestaña S13.",
+                  wraplength=270, background=BLANCO).pack(fill="x", pady=(0, 8))
         ttk.Label(panel_control, text="Seleccionar lámina explicativa:", background=BLANCO).pack(anchor="w")
 
         self.grafico_clustering_var = tk.StringVar(value="04. Espacio de Factores por Régimen")
@@ -344,7 +361,8 @@ class InterfazMonteCarlo(tk.Tk):
         tk.Label(
             panel_control,
             text="Fecundidad domina fuertemente (r = +0.97). Fecundidad ≤ 1.01 anticipa la inversión (2046–2054). "
-                 "Fecundidad > 1.01 la posterga (2055–2065). Fecundidad extrema (+13.9%) nunca invierte (0.75%).",
+                 "Fecundidad > 1.01 la posterga (2055–2065). En la referencia, fecundidad extrema "
+                 "(+13.9%) no cruza dentro del horizonte (0.75%).",
             bg=BLANCO, fg=TEXTO, justify="left", wraplength=250, font=("Segoe UI", 8)
         ).pack(fill="x")
 
@@ -384,7 +402,7 @@ class InterfazMonteCarlo(tk.Tk):
             ("Inversión Temprana", "3 499", "34.99 %", "2052.5 (min 2046)", "0.9577 ± 0.034", "0.9911 ± 0.011", "Fecundidad baja reduce J; cruce acelerado"),
             ("Inversión Central", "2 958", "29.58 %", "2054.2 (nominal)", "0.9898 ± 0.028", "1.0138 ± 0.010", "Estabilidad en torno a 2054; mortalidad amortigua A"),
             ("Inversión Tardía", "3 468", "34.68 %", "2056.8 (max 2065)", "1.0493 ± 0.026", "0.9967 ± 0.013", "Fecundidad alta expande J; inversión postergada"),
-            ("Sin Inversión", "75", "0.75 %", "> 2065 (Censurado)", "1.1389 ± 0.016", "1.0057 ± 0.016", "Natalidad extrema (+13.9%): J nunca es superada"),
+            ("Sin Inversión", "75", "0.75 %", "> 2065 (Censurado)", "1.1389 ± 0.016", "1.0057 ± 0.016", "Referencia: sin cruce en el horizonte"),
         ]
         for fila in datos:
             self.tree_perfiles.insert("", "end", values=fila)
@@ -477,7 +495,7 @@ class InterfazMonteCarlo(tk.Tk):
             ("Sprint 3", "S11", "Integración híbrida MPI + OpenMP (simulador_hibrido, PB-08)", "✔ Implementado"),
             ("Sprint 3", "S11–S12", "Modelamiento Avanzado: Clustering de Escenarios y Edades (docs/06)", "✔ Implementado"),
             ("Sprint 3", "S12", "Ejecución masiva de 10 millones de escenarios (R = 10⁷, híbrido 4 × 2)", "✔ Ejecutado y Disponible"),
-            ("Sprint 4", "S13", "Análisis de resultados y rendimiento (PB-10)", "⏳ Pendiente"),
+            ("Sprint 4", "S13", "Análisis dinámico, campañas comparables y exportación (PB-10)", "✔ Implementado; medir en equipo final"),
             ("Sprint 4", "S14", "Informe final, correcciones y ensayo de diapositivas", "⏳ En preparación"),
             ("Cierre", "S15", "Presentación final del proyecto", "📅 Programado"),
         ]
@@ -520,14 +538,13 @@ class InterfazMonteCarlo(tk.Tk):
             self.aviso_var.set("Ingrese un entero entre 1 y 1 000 000 000.")
             self.aviso.configure(fg=ROJO)
             return
-        motor = self.motor_var.get()
-        ms = MS_REFERENCIA.get(motor, 2.0)
-        estimado = n * ms / 1000.0
-        self.aviso_var.set(f"Estimado ({motor}): {duracion_legible(estimado)} ({ms:.2f} ms/esc.)" +
+        self.aviso_var.set("Sin estimación fija: el tiempo se medirá en el equipo que ejecute la simulación." +
                            ("\nAdvertencia: supera los 100 000 escenarios." if n > 100_000 else ""))
         self.aviso.configure(fg=NARANJA if n > 100_000 else GRIS)
 
     def ejecutar(self) -> None:
+        if self.trabajo_activo:
+            return
         try:
             escenarios = entero_positivo(self.escenarios_var.get())
         except ValueError:
@@ -547,62 +564,81 @@ class InterfazMonteCarlo(tk.Tk):
         marca = datetime.now().strftime("%m%d_%H%M%S_%f")[:18]
         salida_rel = Path("resultados_interfaz") / f"r_{codigos.get(motor, 'sim')}_{escenarios}_{marca}"
 
-        if motor == "Go":
-            ejecutable = GO_BASE / "simulador_go.exe" if sys.platform == "win32" else GO_BASE / "simulador_go"
-            if not ejecutable.is_file():
-                messagebox.showerror("Ejecutable no encontrado", f"No se encontró {ejecutable}.\nCompile desde MonteCarlo_Go con:\ngo build -o simulador_go.exe ./cmd/simulador")
-                return
-            salida = GO_BASE / salida_rel
-            comando = [str(ejecutable), "--config", config.name, "--datos", "datos", "--salida", str(salida_rel), "--escenarios", str(escenarios)]
-            cwd = GO_BASE
-
-        elif motor == "C++ Secuencial":
-            ejecutable = BASE / "simulador.exe" if sys.platform == "win32" else BASE / "simulador"
-            if not ejecutable.is_file():
-                messagebox.showerror("Ejecutable no encontrado", f"No se encontró {ejecutable}.\nCompile desde MonteCarlo_Secuencial con g++.")
-                return
-            salida = BASE / salida_rel
-            comando = [str(ejecutable), "--config", config.name, "--datos", "datos", "--salida", str(salida_rel), "--escenarios", str(escenarios)]
-            cwd = BASE
-
-        else:
-            # Versiones paralelas: C++ OpenMP, C++ MPI, C++ Híbrido (MPI+OpenMP)
-            salida = BASE / salida_rel
-            cfg_wsl = f"../MonteCarlo_Secuencial/{config.name}"
-            datos_wsl = f"../MonteCarlo_Secuencial/datos"
-            salida_wsl = ruta_a_wsl(salida)
-            paralelo_wsl = ruta_a_wsl(PARALELO_BASE)
-            cd_wsl = shlex.quote(paralelo_wsl)
-            salida_wsl_q = shlex.quote(salida_wsl)
-
-            if motor == "C++ OpenMP":
-                cmd_wsl = f"cd {cd_wsl} && ./simulador_omp --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl_q} --escenarios {escenarios} --hilos 8"
-            elif motor == "C++ MPI":
-                cmd_wsl = f"cd {cd_wsl} && mpirun --oversubscribe -np 4 ./simulador_mpi --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl_q} --escenarios {escenarios}"
-            elif motor == "C++ Híbrido (MPI+OpenMP)":
-                cmd_wsl = f"cd {cd_wsl} && mpirun --oversubscribe -np 2 ./simulador_hibrido --config {cfg_wsl} --datos {datos_wsl} --salida {salida_wsl_q} --escenarios {escenarios} --hilos 4"
-            else:
-                messagebox.showerror("Error", f"Motor desconocido: {motor}")
-                return
-
-            # En Windows se invoca a traves de WSL de forma completamente transparente
-            if sys.platform == "win32":
-                # Ubuntu contiene g++, OpenMP y OpenMPI. No se usa la distro
-                # predeterminada porque Docker Desktop puede ocupar ese lugar.
-                comando = ["wsl", "-d", "Ubuntu", "--", "bash", "-lc", cmd_wsl]
-            else:
-                comando = ["bash", "-c", cmd_wsl]
-            cwd = BASE
-
-        self.ejecutar_btn.state(["disabled"])
+        version = {"C++ Secuencial": "secuencial", "C++ OpenMP": "openmp", "C++ MPI": "mpi",
+                   "C++ Híbrido (MPI+OpenMP)": "hibrido", "Go": "go"}[motor]
+        try:
+            procesos = entero_positivo(self.procesos_var.get()) if version in {"mpi", "hibrido"} else 1
+            hilos = entero_positivo(self.hilos_var.get()) if version in {"openmp", "hibrido"} else 1
+        except ValueError:
+            messagebox.showerror("Recursos", "Ingrese procesos e hilos enteros positivos.")
+            return
+        salida = (GO_BASE if version == "go" else BASE) / salida_rel
+        usar_wsl = sys.platform == "win32" and version in {"openmp", "mpi", "hibrido"}
+        ruta = ruta_a_wsl if usar_wsl else str
+        datos = (GO_BASE if version == "go" else BASE) / "datos"
+        argumentos = ["ejecutar", "--version", version, "--config", ruta(config), "--datos", ruta(datos),
+                      "--salida", ruta(salida), "--escenarios", str(escenarios),
+                      "--procesos", str(procesos), "--hilos", str(hilos)]
+        comando = self._comando_s13(argumentos, usar_wsl)
+        self._ocupado(True)
         self.progreso.start(12)
         self.estado_var.set(f"Ejecutando {escenarios:,} escenarios con {motor}...")
-        threading.Thread(target=self._ejecutar_hilo, args=(comando, salida, cwd), daemon=True).start()
+        threading.Thread(target=self._ejecutar_hilo, args=(comando, salida, ROOT), daemon=True).start()
+
+    def _comando_s13(self, argumentos: list[str], usar_wsl: bool) -> list[str]:
+        entrada = ROOT / "MonteCarlo_Analisis" / "cli.py"
+        if usar_wsl:
+            return ["wsl", "-d", self.distro_var.get().strip(), "--", "python3", ruta_a_wsl(entrada), *argumentos]
+        return [sys.executable, str(entrada), *argumentos]
+
+    def _ocupado(self, valor: bool) -> None:
+        self.trabajo_activo = valor
+        self.ejecutar_btn.state(["disabled"] if valor else ["!disabled"])
+        self.panel_analisis.campana_btn.state(["disabled"] if valor else ["!disabled"])
+
+    def _lanzar_campana(self, opciones: dict) -> None:
+        if self.trabajo_activo:
+            return
+        marca = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        salida = ROOT / "salidas_s13" / f"campana_{marca}"
+        usar_wsl = sys.platform == "win32"
+        ruta = ruta_a_wsl if usar_wsl else str
+        argumentos = ["campana", "--config", ruta(BASE / self.config_var.get()),
+                      "--datos", ruta(BASE / "datos"), "--salida", ruta(salida),
+                      "--escenarios", str(opciones["escenarios"]), "--repeticiones", str(opciones["repeticiones"]),
+                      "--versiones", *opciones["versiones"]]
+        if opciones["p"]:
+            argumentos += ["--p", *map(str, opciones["p"])]
+        if opciones["hibridos"]:
+            argumentos += ["--hibridos", *[f"{p}x{h}" for p, h in opciones["hibridos"]]]
+        if opciones["sobresuscripcion"]:
+            argumentos.append("--permitir-sobresuscripcion")
+        comando = self._comando_s13(argumentos, usar_wsl)
+        self._ocupado(True)
+        self.progreso.start(12)
+        self.estado_var.set("Campaña S13 en curso; consulte la pestaña Análisis S13.")
+        threading.Thread(target=self._campana_hilo, args=(comando, salida), daemon=True).start()
+
+    def _campana_hilo(self, comando: list[str], salida: Path) -> None:
+        lineas = []
+        try:
+            with subprocess.Popen(comando, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                  text=True, encoding="utf-8", errors="replace", bufsize=1) as proceso:
+                for linea in proceso.stdout:
+                    lineas.append(linea)
+                    self.cola.put(("campana_log", linea.strip()))
+                codigo = proceso.wait()
+            if codigo:
+                raise RuntimeError("".join(lineas[-30:]))
+            self.cola.put(("campana_fin", salida))
+        except Exception as exc:
+            self.cola.put(("error", f"Campaña: {exc}\nSalidas parciales, si existen: {salida}"))
 
     def _ejecutar_hilo(self, comando: list[str], salida: Path, cwd: Path) -> None:
         try:
             salida.parent.mkdir(parents=True, exist_ok=True)
-            completado = subprocess.run(comando, cwd=cwd, capture_output=True, text=True, check=False)
+            completado = subprocess.run(comando, cwd=cwd, capture_output=True, text=True,
+                                       encoding="utf-8", errors="replace", check=False)
             if completado.returncode != 0:
                 det = completado.stderr.strip() or completado.stdout.strip() or "Error al ejecutar simulador"
                 self.cola.put(("error", det))
@@ -615,12 +651,18 @@ class InterfazMonteCarlo(tk.Tk):
         try:
             while True:
                 tipo, dato = self.cola.get_nowait()
+                if tipo == "campana_log":
+                    self.panel_analisis.estado_var.set(str(dato))
+                    continue
                 self.progreso.stop()
-                self.ejecutar_btn.state(["!disabled"])
+                self._ocupado(False)
                 if tipo == "completo":
                     carpeta = Path(dato)
                     self.cargar_resultados(carpeta)
                     self.estado_var.set(f"Terminado. Resultados en: {carpeta.name}")
+                elif tipo == "campana_fin":
+                    self.panel_analisis.cargar_campana(Path(dato))
+                    self.estado_var.set(f"Campaña completada: {ruta_visible(dato)}")
                 else:
                     self.estado_var.set("La simulación no pudo completarse.")
                     messagebox.showerror("Error", str(dato))
@@ -628,8 +670,8 @@ class InterfazMonteCarlo(tk.Tk):
             pass
         self.after(120, self._procesar_cola)
 
-    def seleccionar_resultados(self) -> None:
-        carpeta = filedialog.askdirectory(initialdir=ROOT, title="Seleccione carpeta de resultados")
+    def seleccionar_resultados(self, carpeta: Path | None = None) -> None:
+        carpeta = carpeta or filedialog.askdirectory(initialdir=ROOT, title="Seleccione carpeta de resultados")
         if carpeta:
             self.cargar_resultados(Path(carpeta))
 
@@ -640,10 +682,10 @@ class InterfazMonteCarlo(tk.Tk):
             messagebox.showerror("Resultados incompletos", "La carpeta debe contener distribucion.csv y metricas.csv.")
             return
         try:
+            analisis = analizar_ejecucion(carpeta)
             with distribucion.open(newline="", encoding="utf-8") as f:
                 self.resultados = list(csv.DictReader(f))
-            with metricas.open(newline="", encoding="utf-8") as f:
-                m = next(csv.DictReader(f))
+            m = analisis.metricas
         except Exception as exc:
             messagebox.showerror("Error de lectura", str(exc))
             return
@@ -660,8 +702,9 @@ class InterfazMonteCarlo(tk.Tk):
             "Tiempo total": duracion_legible(total),
             "ms / escenario": f"{float(m['ms_por_escenario']):.2f}",
             "Rendimiento": f"{float(m['escenarios_por_segundo']):.0f} esc/s",
-            "CPU / pared": f"{(100 * cpu / total if total else 0):.0f} %",
-            "RSS pico": f"{float(m['memoria_pico_mib']):.1f} MiB",
+            "CPU / pared": ("N/D (Go)" if m["version"] == "go_secuencial" else f"{cpu / total:.2f}"),
+            "RSS pico": ("Ver S13 (Go)" if m["version"] == "go_secuencial" else
+                         f"{float(m['memoria_pico_mib']):.1f} MiB" if m["memoria_pico_mib"] > 0 else "N/D"),
         }
         for nom, val in valores.items():
             if nom in self.metricas_vars:
@@ -686,12 +729,14 @@ class InterfazMonteCarlo(tk.Tk):
                 p = sum(float(r["probabilidad_anual"]) for r in self.resultados if desde <= int(r["anio"]) <= hasta)
                 self.intervalos.append((k, desde, hasta, p))
                 textos.append(f"μ±{k}σ ({desde}–{hasta}): {p:.1%}")
-            self.intervalos_var.set("Intervalos de confianza reales:   " + "   |   ".join(textos))
+            self.intervalos_var.set("Franjas de dispersión empírica (no IC de la media):   " + "   |   ".join(textos))
         else:
+            self.intervalos = []
             self.resumen_var.set("No se registraron cruces demográficos dentro del horizonte.")
             self.intervalos_var.set("")
 
         self.dibujar()
+        self.panel_analisis.mostrar_ejecucion(analisis)
 
     def dibujar(self) -> None:
         self.anotacion = None
@@ -725,7 +770,7 @@ class InterfazMonteCarlo(tk.Tk):
             max_y = max(anual) if anual else 1.0
             self.eje.set_ylim(-0.002, max_y * 1.25)
 
-        self.eje.set_xlabel("Primer año de inversión T (A ≥ J)", color=TEXTO, fontsize=9)
+        self.eje.set_xlabel("Primer año de inversión T (A > J)", color=TEXTO, fontsize=9)
         contexto = self.version_actual or "resultados cargados"
         if self.escenarios_actual:
             contexto += f" · {self.escenarios_actual:,} escenarios".replace(",", " ")
