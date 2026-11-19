@@ -31,16 +31,18 @@ simulador_hibrido: src/main_hibrido.cpp $(COMUNES) $(CABECERAS)
 # CUDA: gpu.cu se compila con nvcc y el resto con g++. --fmad=false evita que la GPU fusione
 # multiplicacion y suma, para que calcule lo mismo que la CPU con el mismo codigo (prueba C4).
 CUDA_FUENTES := src/gpu.hpp src/nucleo_cuda.hpp src/cuda_comun.hpp
+# rpath: el ejecutable encuentra libcudart sin depender de LD_LIBRARY_PATH (p. ej. lanzado con wsl -- ...).
+CUDA_ENLACE  := -L$(CUDA_HOME)/lib64 -Wl,-rpath,$(CUDA_HOME)/lib64 -lcudart
 
 gpu_cuda.o: src/gpu.cu src/gpu.hpp src/nucleo_cuda.hpp
 	$(NVCC) -std=c++17 -O3 --fmad=false -c src/gpu.cu -o $@
 
 simulador_cuda: src/main_cuda.cpp gpu_cuda.o $(CUDA_FUENTES) $(COMUNES) $(CABECERAS)
-	$(CXX) $(CXXFLAGS) src/main_cuda.cpp $(COMUNES) gpu_cuda.o -o $@ -L$(CUDA_HOME)/lib64 -lcudart
+	$(CXX) $(CXXFLAGS) src/main_cuda.cpp $(COMUNES) gpu_cuda.o -o $@ $(CUDA_ENLACE)
 
 # MPI + CUDA + OpenMP: el proceso 0 usa la GPU y los demas la CPU, todos con el nucleo de nucleo_cuda.hpp.
 simulador_mpi_cuda: src/main_mpi_cuda.cpp gpu_cuda.o $(CUDA_FUENTES) $(COMUNES) $(CABECERAS)
-	$(MPICXX) $(CXXFLAGS) -fopenmp -DOMPI_SKIP_MPICXX src/main_mpi_cuda.cpp $(COMUNES) gpu_cuda.o -o $@ -L$(CUDA_HOME)/lib64 -lcudart
+	$(MPICXX) $(CXXFLAGS) -fopenmp -DOMPI_SKIP_MPICXX src/main_mpi_cuda.cpp $(COMUNES) gpu_cuda.o -o $@ $(CUDA_ENLACE)
 
 secuencial:
 	$(MAKE) -C $(SEC) simulador

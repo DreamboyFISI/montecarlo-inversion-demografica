@@ -38,9 +38,12 @@ def parser() -> argparse.ArgumentParser:
         comando.add_argument("--salida", type=Path, help="Carpeta nueva para exportar Markdown, CSV, JSON y PNG")
         comando.add_argument("--sin-graficos", action="store_true")
     lanzar = sub.add_parser("ejecutar", help="Ejecutar un motor y registrar su procedencia real")
-    lanzar.add_argument("--version", required=True, choices=["secuencial", "openmp", "mpi", "hibrido", "go"])
+    lanzar.add_argument("--version", required=True, choices=["secuencial", "openmp", "mpi", "hibrido", "go", "cuda", "mpi_cuda"])
     lanzar.add_argument("--procesos", type=int, default=1)
     lanzar.add_argument("--hilos", type=int, default=1)
+    lanzar.add_argument("--muestreo", choices=["estandar", "rapido"], default="estandar",
+                        help="rapido: binomial por inversion/BTRS y corte en la primera inversion "
+                             "(estadisticamente equivalente, no identico). CUDA siempre usa rapido")
     campana = sub.add_parser("campana", help="Campana local secuencial/OpenMP/MPI/hibrido, nunca simultaneas")
     campana.add_argument("--repeticiones", type=int, default=3)
     campana.add_argument("--versiones", nargs="+", choices=["openmp", "mpi", "hibrido"],
@@ -75,7 +78,7 @@ def main(argv=None) -> int:
                 exportar_comparacion(c, a.salida, not a.sin_graficos)
         elif a.accion == "ejecutar":
             salida = ejecutar(a.version, a.config, a.datos, a.salida, a.escenarios, a.procesos,
-                              a.hilos, a.permitir_sobresuscripcion)
+                              a.hilos, a.permitir_sobresuscripcion, muestreo=a.muestreo)
             print(informe_ejecucion(analizar_ejecucion(salida)))
         else:
             salida = ejecutar_campana(a.config, a.datos, a.salida, a.escenarios, a.repeticiones,

@@ -44,7 +44,7 @@ Proyecto del curso Programación Paralela y Concurrente. Abordamos la paraleliza
 | `MonteCarlo_Secuencial/resultados_demo/`, `graficos/` | Ejecución de referencia (1 000 escenarios, semilla 12345) y sus gráficos | S7 |
 | `MonteCarlo_Secuencial/resultados_incertidumbre/`, `graficos_incertidumbre/` | 10 000 escenarios con incertidumbre macro y sus gráficos | S9 |
 | `MonteCarlo_Secuencial/linea_base/` | T1 medido: `metricas_secuencial.csv`, `metricas_crudas.csv`, `linea_base.md`, `linea_base_tiempos.png` | S9 |
-| `MonteCarlo_Secuencial/interfaz.py` | Interfaz gráfica (Tkinter) que ejecuta el simulador C++ o Go y muestra los resultados | extra |
+| `MonteCarlo_Secuencial/interfaz.py` | Interfaz gráfica (Tkinter) que ejecuta el simulador C++ (CPU o GPU) o Go y muestra los resultados | extra |
 | `MonteCarlo_Paralelo/src/main_openmp.cpp` | Bucle Monte Carlo con OpenMP | S10 |
 | `MonteCarlo_Paralelo/src/main_mpi.cpp` | Bucle Monte Carlo con MPI | S10 |
 | `MonteCarlo_Paralelo/src/main_hibrido.cpp` | Bucle Monte Carlo híbrido MPI + OpenMP | S11 |
@@ -138,6 +138,17 @@ python interfaz.py
 ```
 
 Ejecuta `simulador.exe` (Windows) o `simulador` (Linux/macOS), o bien la versión Go, y presenta los CSV producidos.
+
+En la pestaña de simulación se elige el motor: C++ secuencial, OpenMP, MPI, híbrido, Go, **CUDA (GPU)** o **MPI + CUDA + OpenMP**. La casilla **«Muestreo rápido»** añade `--muestreo rapido` a los motores C++ de CPU; en los dos motores con GPU queda marcada y bloqueada (es su único modo) y en Go, desmarcada. Las ejecuciones con muestreo rápido o con GPU se muestran con un aviso: son estadísticamente equivalentes a las estándar, no idénticas, y no entran en las campañas de speedup de la pestaña S13.
+
+En Windows, la interfaz lanza OpenMP, MPI, híbrido, CUDA y MPI + CUDA dentro de WSL (distribución `Ubuntu`), así que esos ejecutables deben estar compilados ahí. Para los dos de GPU hace falta, además, el compilador `nvcc` (paquete `cuda-toolkit` del repositorio de NVIDIA para WSL-Ubuntu; la GPU la expone el controlador de Windows):
+
+```bash
+cd MonteCarlo_Paralelo
+make simulador_cuda simulador_mpi_cuda     # no forman parte de make all
+```
+
+Esta compilación se probó en la imagen Docker `nvidia/cuda:12.6.3-devel-ubuntu24.04` (`docker/ejecutar_cuda.sh`), no en una distribución WSL. El lanzador equivalente por consola es `python3 MonteCarlo_Analisis/cli.py ejecutar --version cuda|mpi_cuda ...` y, para el muestreo, `--muestreo rapido`.
 
 ### Resultado de la ejecución de referencia
 

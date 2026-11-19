@@ -9,7 +9,8 @@ from dataclasses import dataclass
 from fractions import Fraction
 from pathlib import Path
 
-VERSIONES = {"secuencial", "openmp", "mpi", "hibrido", "go_secuencial"}
+VERSIONES = {"secuencial", "openmp", "mpi", "hibrido", "go_secuencial", "cuda", "mpi_cuda"}
+VERSIONES_GPU = {"cuda", "mpi_cuda"}
 Z95 = 1.959963984540054
 
 
@@ -93,7 +94,7 @@ def leer_metricas(carpeta: Path) -> dict:
         if m.get("segundos_comunicacion", "") != "" else None
     )
     p, h, v = m["procesos"], m["hilos"], m["version"]
-    if ((v in {"secuencial", "go_secuencial"} and (p, h) != (1, 1))
+    if ((v in {"secuencial", "go_secuencial", "cuda"} and (p, h) != (1, 1))
             or (v == "openmp" and p != 1) or (v == "mpi" and h != 1)):
         raise ValueError("Procesos/hilos incompatibles con la version declarada")
     return m
@@ -206,7 +207,15 @@ def analizar_ejecucion(carpeta: Path | str) -> Ejecucion:
     if m["version"] == "go_secuencial":
         avisos.append("Go asigna CPU = tiempo total en main.go: no es CPU medida. Fuera de Windows, "
                       "la memoria informada es runtime.MemStats.Sys, no RSS pico.")
-    if m["version"] in {"mpi", "hibrido"}:
+    if m["version"] in VERSIONES_GPU:
+        avisos.append("Version con GPU: mismo modelo, pero otro generador aleatorio (xoroshiro128++) y muestreo "
+                      "rapido. Sus resultados son estadisticamente equivalentes a los de CPU, no identicos "
+                      "escenario a escenario, y no entran en las campanas de speedup.")
+    elif config.get("muestreo", "").startswith("rapido"):
+        avisos.append("Muestreo rapido: binomial por inversion/BTRS y corte en la primera inversion. Resultados "
+                      "estadisticamente equivalentes a los del muestreo estandar, no identicos escenario a "
+                      "escenario; su tiempo no es comparable con el de una ejecucion estandar.")
+    if m["version"] in {"mpi", "hibrido", "mpi_cuda"}:
         avisos.append("MPI/hibrido: memoria es el maximo por proceso, no la suma. CPU se suma antes "
                       "de la escritura final: CPU/pared es descriptivo, no una eficiencia ni un speedup.")
     if con == 1:

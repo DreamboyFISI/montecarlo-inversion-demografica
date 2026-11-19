@@ -76,6 +76,8 @@ def rutas_binarios() -> dict[str, Path]:
         "mpi": ROOT / "MonteCarlo_Paralelo" / f"simulador_mpi{ext}",
         "hibrido": ROOT / "MonteCarlo_Paralelo" / f"simulador_hibrido{ext}",
         "go": ROOT / "MonteCarlo_Go" / f"simulador_go{ext}",
+        "cuda": ROOT / "MonteCarlo_Paralelo" / f"simulador_cuda{ext}",
+        "mpi_cuda": ROOT / "MonteCarlo_Paralelo" / f"simulador_mpi_cuda{ext}",
     }
 
 
@@ -93,13 +95,13 @@ def capturar_contexto(datos: Path, config: Path, variables: dict | None = None) 
         identidad.append(machine_id.read_text().strip())
     fuentes = {}
     for carpeta in ("MonteCarlo_Secuencial", "MonteCarlo_Paralelo", "MonteCarlo_Go"):
-        for patron in ("src/*.cpp", "src/*.hpp", "cmd/simulador/*.go", "Makefile", "go.mod", "go.sum"):
+        for patron in ("src/*.cpp", "src/*.hpp", "src/*.cu", "cmd/simulador/*.go", "Makefile", "go.mod", "go.sum"):
             for archivo in sorted((ROOT / carpeta).glob(patron)):
                 fuentes[archivo.relative_to(ROOT).as_posix()] = huella(archivo)
     binarios = {v: huella(p) for v, p in rutas_binarios().items() if p.is_file()}
     herramientas = {nombre: salida_herramienta(cmd) for nombre, cmd in {
         "g++": ["g++", "--version"], "mpirun": ["mpirun", "--version"],
-        "mpicxx": ["mpicxx", "--showme"], "go": ["go", "version"],
+        "mpicxx": ["mpicxx", "--showme"], "go": ["go", "version"], "nvcc": ["nvcc", "--version"],
     }.items()}
     entorno = {k: v for k, v in (variables if variables is not None else os.environ).items()
                if k.startswith(("OMP_", "OMPI_", "PRTE_", "GOMP_", "KMP_"))}

@@ -5,7 +5,8 @@ Uso desde la raiz o desde MonteCarlo_Secuencial:
     python MonteCarlo_Secuencial/interfaz.py
 
 Permite presentar:
-1. Simulacion Monte Carlo: secuencial, OpenMP, MPI, Hibrido (S11) y Go.
+1. Simulacion Monte Carlo: secuencial, OpenMP, MPI, Hibrido (S11), Go, CUDA y MPI + CUDA,
+   con muestreo estandar o rapido.
 2. Segmentacion y Mineria de Datos (Clustering S11-S12): perfiles demograficos,
    graficos de dispersion de factores, boxplots de anio de cruce, arbol de decision
    explicable y agrupamiento de edades simples (Parte B).
@@ -121,6 +122,8 @@ class InterfazMonteCarlo(tk.Tk):
         estilo.map("Accent.TButton", background=[("active", CELESTE), ("disabled", "#B0BEC5")])
         estilo.configure("Soft.TButton", background=MENTA, foreground=BLANCO, font=("Segoe UI Semibold", 9), padding=7)
         estilo.map("Soft.TButton", background=[("active", VERDE)])
+        estilo.configure("Card.TCheckbutton", background=BLANCO, foreground=TEXTO, font=("Segoe UI", 9))
+        estilo.map("Card.TCheckbutton", background=[("active", BLANCO)])
         estilo.configure("TNotebook", background=FONDO, borderwidth=0)
         estilo.configure("TNotebook.Tab", font=("Segoe UI Semibold", 10), padding=(16, 7), background="#CFD8DC", foreground=TEXTO)
         estilo.map("TNotebook.Tab", background=[("selected", BLANCO), ("active", "#B0BEC5")], foreground=[("selected", AZUL)])
@@ -201,7 +204,8 @@ class InterfazMonteCarlo(tk.Tk):
 
         ttk.Label(lateral, text="Motor / Versión:", background=BLANCO).pack(anchor="w")
         self.motor_var = tk.StringVar(value="C++ Secuencial")
-        motores = ["C++ Secuencial", "C++ OpenMP", "C++ MPI", "C++ Híbrido (MPI+OpenMP)", "Go"]
+        motores = ["C++ Secuencial", "C++ OpenMP", "C++ MPI", "C++ Híbrido (MPI+OpenMP)", "Go",
+                   "C++ CUDA (GPU)", "C++ MPI + CUDA + OpenMP"]
         selector_motor = ttk.Combobox(lateral, textvariable=self.motor_var, values=motores, state="readonly")
         selector_motor.pack(fill="x", pady=(3, 10))
         selector_motor.bind("<<ComboboxSelected>>", lambda _e: self._actualizar_estimacion())
@@ -214,6 +218,15 @@ class InterfazMonteCarlo(tk.Tk):
         ttk.Spinbox(recursos, from_=1, to=4096, width=4, textvariable=self.procesos_var).pack(side="left")
         ttk.Label(recursos, text=" Hilos:", background=BLANCO).pack(side="left")
         ttk.Spinbox(recursos, from_=1, to=4096, width=4, textvariable=self.hilos_var).pack(side="left")
+
+        # Muestreo rapido: binomial por inversion/BTRS y corte en la primera inversion. Solo C++; las
+        # versiones con GPU lo usan siempre.
+        self.rapido_var = tk.BooleanVar(value=False)
+        self._rapido_elegido: bool | None = None
+        self.rapido_chk = ttk.Checkbutton(lateral, text="Muestreo rápido (equivalente, no idéntico)",
+                                          variable=self.rapido_var, style="Card.TCheckbutton",
+                                          command=self._actualizar_estimacion)
+        self.rapido_chk.pack(anchor="w", pady=(0, 8))
 
         ttk.Label(lateral, text="Configuración (.ini):", background=BLANCO).pack(anchor="w")
         self.config_var = tk.StringVar(value="config_incertidumbre.ini")
@@ -493,6 +506,7 @@ class InterfazMonteCarlo(tk.Tk):
             ("Sprint 2", "S9", "Validación estadística y línea base T1 (R=10³, 10⁴, 10⁵)", "✔ Hecho"),
             ("Sprint 3", "S10", "Paralelización con OpenMP (simulador_omp) y MPI + Docker (simulador_mpi)", "✔ Hecho"),
             ("Sprint 3", "S11", "Integración híbrida MPI + OpenMP (simulador_hibrido, PB-08)", "✔ Implementado"),
+            ("Extra", "S13", "Muestreo rápido y versiones CUDA y MPI + CUDA + OpenMP (10 M de escenarios en 2,1 min)", "✔ Implementado"),
             ("Sprint 3", "S11–S12", "Modelamiento Avanzado: Clustering de Escenarios y Edades (docs/06)", "✔ Implementado"),
             ("Sprint 3", "S12", "Ejecución masiva de 10 millones de escenarios (R = 10⁷, híbrido 4 × 2)", "✔ Ejecutado y Disponible"),
             ("Sprint 4", "S13", "Análisis dinámico, campañas comparables y exportación (PB-10)", "✔ Implementado; medir en equipo final"),
@@ -538,9 +552,34 @@ class InterfazMonteCarlo(tk.Tk):
             self.aviso_var.set("Ingrese un entero entre 1 y 1 000 000 000.")
             self.aviso.configure(fg=ROJO)
             return
+        motor = self.motor_var.get()
+        gpu = "CUDA" in motor
+        # Las versiones con GPU solo existen con muestreo rapido; Go solo con el estandar.
+        if hasattr(self, "rapido_chk"):
+            forzado = gpu or motor == "Go"
+            # Al pasar por un motor que fija el muestreo se recuerda la eleccion del usuario y se
+            # restaura al volver a un motor que permite elegir.
+            if forzado and self._rapido_elegido is None:
+                self._rapido_elegido = self.rapido_var.get()
+            if forzado:
+                self.rapido_var.set(gpu)
+            elif self._rapido_elegido is not None:
+                self.rapido_var.set(self._rapido_elegido)
+                self._rapido_elegido = None
+            self.rapido_chk.state(["disabled"] if forzado else ["!disabled"])
+        rapido = gpu or (hasattr(self, "rapido_var") and self.rapido_var.get())
+        lento = n > 100_000 and not rapido
+        nota = ""
+        if gpu:
+            nota = ("\nGPU: requiere una tarjeta NVIDIA y simulador_cuda / simulador_mpi_cuda compilados en WSL."
+                    "\nMPI + CUDA: el proceso 0 usa la GPU y los demás la CPU con esos hilos."
+                    if "MPI" in motor else
+                    "\nGPU: requiere una tarjeta NVIDIA y simulador_cuda compilado en WSL.")
+        elif rapido:
+            nota = "\nMuestreo rápido: resultados estadísticamente equivalentes, no idénticos a los del estándar."
         self.aviso_var.set("Sin estimación fija: el tiempo se medirá en el equipo que ejecute la simulación." +
-                           ("\nAdvertencia: supera los 100 000 escenarios." if n > 100_000 else ""))
-        self.aviso.configure(fg=NARANJA if n > 100_000 else GRIS)
+                           ("\nAdvertencia: supera los 100 000 escenarios." if lento else "") + nota)
+        self.aviso.configure(fg=NARANJA if lento else GRIS)
 
     def ejecutar(self) -> None:
         if self.trabajo_activo:
@@ -560,29 +599,35 @@ class InterfazMonteCarlo(tk.Tk):
         codigos = {
             "C++ Secuencial": "sec", "C++ OpenMP": "omp", "C++ MPI": "mpi",
             "C++ Híbrido (MPI+OpenMP)": "hib", "Go": "go",
+            "C++ CUDA (GPU)": "cuda", "C++ MPI + CUDA + OpenMP": "mpicuda",
         }
         marca = datetime.now().strftime("%m%d_%H%M%S_%f")[:18]
         salida_rel = Path("resultados_interfaz") / f"r_{codigos.get(motor, 'sim')}_{escenarios}_{marca}"
 
         version = {"C++ Secuencial": "secuencial", "C++ OpenMP": "openmp", "C++ MPI": "mpi",
-                   "C++ Híbrido (MPI+OpenMP)": "hibrido", "Go": "go"}[motor]
+                   "C++ Híbrido (MPI+OpenMP)": "hibrido", "Go": "go",
+                   "C++ CUDA (GPU)": "cuda", "C++ MPI + CUDA + OpenMP": "mpi_cuda"}[motor]
         try:
-            procesos = entero_positivo(self.procesos_var.get()) if version in {"mpi", "hibrido"} else 1
-            hilos = entero_positivo(self.hilos_var.get()) if version in {"openmp", "hibrido"} else 1
+            procesos = entero_positivo(self.procesos_var.get()) if version in {"mpi", "hibrido", "mpi_cuda"} else 1
+            hilos = entero_positivo(self.hilos_var.get()) if version in {"openmp", "hibrido", "mpi_cuda"} else 1
         except ValueError:
             messagebox.showerror("Recursos", "Ingrese procesos e hilos enteros positivos.")
             return
         salida = (GO_BASE if version == "go" else BASE) / salida_rel
-        usar_wsl = sys.platform == "win32" and version in {"openmp", "mpi", "hibrido"}
+        usar_wsl = sys.platform == "win32" and version in {"openmp", "mpi", "hibrido", "cuda", "mpi_cuda"}
+        rapido = self.rapido_var.get() and version not in {"go", "cuda", "mpi_cuda"}
         ruta = ruta_a_wsl if usar_wsl else str
         datos = (GO_BASE if version == "go" else BASE) / "datos"
         argumentos = ["ejecutar", "--version", version, "--config", ruta(config), "--datos", ruta(datos),
                       "--salida", ruta(salida), "--escenarios", str(escenarios),
                       "--procesos", str(procesos), "--hilos", str(hilos)]
+        if rapido:
+            argumentos += ["--muestreo", "rapido"]
         comando = self._comando_s13(argumentos, usar_wsl)
         self._ocupado(True)
         self.progreso.start(12)
-        self.estado_var.set(f"Ejecutando {escenarios:,} escenarios con {motor}...")
+        self.estado_var.set(f"Ejecutando {escenarios:,} escenarios con {motor}"
+                            f"{' (muestreo rápido)' if rapido else ''}...")
         threading.Thread(target=self._ejecutar_hilo, args=(comando, salida, ROOT), daemon=True).start()
 
     def _comando_s13(self, argumentos: list[str], usar_wsl: bool) -> list[str]:

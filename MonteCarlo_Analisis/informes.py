@@ -81,10 +81,10 @@ def informe_ejecucion(e: Ejecucion) -> str:
         texto.append("- CPU/pared: **N/D**; esta implementacion Go no mide tiempo de CPU.")
     memoria = m["memoria_pico_mib"]
     alcance = ("memoria informada por Go (alcance dependiente de plataforma)" if m["version"] == "go_secuencial"
-               else "RSS pico maximo por proceso" if m["version"] in {"mpi", "hibrido"} else "RSS pico del proceso")
+               else "RSS pico maximo por proceso" if m["version"] in {"mpi", "hibrido", "mpi_cuda"} else "RSS pico del proceso")
     texto.append(f"- {alcance}: **{numero(memoria if memoria > 0 else None, 3)} MiB**. "
                  "Cero en el archivo significa medicion no disponible, no consumo nulo.")
-    if m["version"] in {"mpi", "hibrido"}:
+    if m["version"] in {"mpi", "hibrido", "mpi_cuda"}:
         texto.append(f"- Espera + comunicacion informada: **{numero(m['segundos_comunicacion'])} s**; "
                      "incluye espera/desbalance y no permite aislar solo transferencia de datos.")
     if e.procedencia:

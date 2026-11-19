@@ -133,6 +133,37 @@ class ResultadosTests(unittest.TestCase):
         self.assertIsNone(e.procedencia)
         self.assertIn("Speedup individual: N/D", informe_ejecucion(e))
 
+    def test_cuda_y_muestreo_rapido_se_leen_con_aviso(self):
+        cuda = analizar_ejecucion(ROOT / "MonteCarlo_Paralelo/resultados_10000000_cuda")
+        self.assertEqual(cuda.metricas["version"], "cuda")
+        self.assertIn("xoroshiro128++", " ".join(cuda.avisos))
+        mixta = analizar_ejecucion(ROOT / "MonteCarlo_Paralelo/resultados_10000000_mpi_cuda")
+        self.assertEqual((mixta.metricas["version"], mixta.metricas["procesos"]), ("mpi_cuda", 4))
+        self.assertEqual(mixta.distribucion, cuda.distribucion)  # el resultado no depende del reparto
+        rapida = analizar_ejecucion(ROOT / "MonteCarlo_Paralelo/resultados_10000000_rapido")
+        self.assertIn("Muestreo rapido", " ".join(rapida.avisos))
+        estandar = analizar_ejecucion(ROOT / "MonteCarlo_Paralelo/resultados_10000000")
+        self.assertNotIn("Muestreo rapido", " ".join(estandar.avisos))
+        self.assertNotEqual(rapida.configuracion, estandar.configuracion)  # nunca comparables entre si
+
+    def test_cuda_un_proceso_un_hilo(self):
+        with self.assertRaises(ValueError):
+            analizar_ejecucion(self.salida(version="cuda", procesos=2))
+
+    def test_recursos_y_muestreo_de_los_motores_nuevos(self):
+        from MonteCarlo_Analisis.ejecucion import muestreo_efectivo, validar_recursos
+        validar_recursos("cuda", 1, 1, False)
+        with self.assertRaises(ValueError):
+            validar_recursos("cuda", 2, 1, False)
+        validar_recursos("mpi_cuda", 2, 1, True)
+        self.assertEqual(muestreo_efectivo("cuda", "estandar"), "rapido")
+        self.assertEqual(muestreo_efectivo("hibrido", "rapido"), "rapido")
+        self.assertEqual(muestreo_efectivo("secuencial", "estandar"), "estandar")
+        with self.assertRaises(ValueError):
+            muestreo_efectivo("go", "rapido")
+        with self.assertRaises(ValueError):
+            muestreo_efectivo("openmp", "turbo")
+
     def test_go_no_cpu_medida_ni_rss_linux(self):
         e = analizar_ejecucion(self.salida(version="go_secuencial"))
         self.assertIn("no mide tiempo de CPU", informe_ejecucion(e))

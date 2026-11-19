@@ -21,30 +21,54 @@ def validar_recursos(version: str, procesos: int, hilos: int, sobresuscripcion: 
         raise ValueError("El simulador admite como maximo 4096 hilos por proceso")
     if version in {"secuencial", "go"} and (procesos, hilos) != (1, 1):
         raise ValueError("Las versiones secuenciales usan 1 proceso x 1 hilo")
+    if version == "cuda" and (procesos, hilos) != (1, 1):
+        raise ValueError("CUDA usa un proceso; el paralelismo esta en la GPU")
     if version == "openmp" and procesos != 1:
         raise ValueError("OpenMP usa un solo proceso")
     if version == "mpi" and hilos != 1:
         raise ValueError("MPI puro usa un hilo por proceso")
-    if procesos * hilos > cpus_disponibles() and not sobresuscripcion:
-        raise ValueError(f"Se solicitaron {procesos * hilos} trabajadores, pero hay {cpus_disponibles()} CPU "
+    # En MPI + CUDA el proceso 0 atiende a la GPU con un solo hilo; los demas usan `hilos` cada uno.
+    trabajadores = (procesos - 1) * hilos + 1 if version == "mpi_cuda" else procesos * hilos
+    if trabajadores > cpus_disponibles() and not sobresuscripcion:
+        raise ValueError(f"Se solicitaron {trabajadores} trabajadores, pero hay {cpus_disponibles()} CPU "
                          "disponibles. Reduzca procesos/hilos o permita sobresuscripcion explicitamente.")
 
 
+GPU = {"cuda", "mpi_cuda"}
+MUESTREOS = {"estandar", "rapido"}
+
+
+def muestreo_efectivo(version: str, muestreo: str) -> str:
+    """Las versiones con GPU solo existen con muestreo rapido; Go solo con el estandar."""
+    if muestreo not in MUESTREOS:
+        raise ValueError(f"Muestreo desconocido: {muestreo}")
+    if version in GPU:
+        return "rapido"
+    if version == "go" and muestreo == "rapido":
+        raise ValueError("El muestreo rapido solo existe en las versiones C++")
+    return muestreo
+
+
 def construir_comando(version: str, config: Path, datos: Path, salida: Path, escenarios: int,
-                      procesos: int, hilos: int, sobresuscripcion: bool) -> list[str]:
+                      procesos: int, hilos: int, sobresuscripcion: bool, muestreo: str = "estandar") -> list[str]:
     if version not in rutas_binarios():
         raise ValueError(f"Motor desconocido: {version}")
+    muestreo = muestreo_efectivo(version, muestreo)
     binario = rutas_binarios()[version]
     if not binario.is_file():
-        raise FileNotFoundError(f"Falta {binario}. Compile los ejecutables antes de ejecutar.")
-    if version in {"mpi", "hibrido"} and sys.platform == "win32":
+        ayuda = (" Las versiones con GPU se compilan aparte: make -C MonteCarlo_Paralelo simulador_cuda "
+                 "simulador_mpi_cuda (requiere nvcc y una GPU NVIDIA)." if version in GPU else "")
+        raise FileNotFoundError(f"Falta {binario}. Compile los ejecutables antes de ejecutar.{ayuda}")
+    if version in {"mpi", "hibrido", "mpi_cuda"} and sys.platform == "win32":
         raise ValueError("Las campanas MPI deben lanzarse dentro de Linux/WSL, no con Python de Windows.")
     comunes = ["--config", str(config), "--datos", str(datos), "--salida", str(salida),
                "--escenarios", str(escenarios)]
-    if version in {"openmp", "hibrido"}:
+    if version in {"openmp", "hibrido", "mpi_cuda"}:
         comunes += ["--hilos", str(hilos)]
+    if muestreo == "rapido" and version not in GPU:  # en las versiones con GPU es el unico modo
+        comunes += ["--muestreo", "rapido"]
     comando = [str(binario), *comunes]
-    if version in {"mpi", "hibrido"}:
+    if version in {"mpi", "hibrido", "mpi_cuda"}:
         opciones = ["--use-hwthread-cpus", "--bind-to", "none"]
         if sobresuscripcion:
             opciones.append("--oversubscribe")
@@ -54,15 +78,19 @@ def construir_comando(version: str, config: Path, datos: Path, salida: Path, esc
 
 def ejecutar(version: str, config: Path | str, datos: Path | str, salida: Path | str,
              escenarios: int, procesos: int = 1, hilos: int = 1, sobresuscripcion: bool = False,
-             campana_id: str | None = None, repeticion: int = 1) -> Path:
+             campana_id: str | None = None, repeticion: int = 1, muestreo: str = "estandar") -> Path:
     escenarios = entero(escenarios, "escenarios", 1)
     if escenarios > 1_000_000_000:
         raise ValueError("El simulador admite hasta 10^9 escenarios")
     validar_recursos(version, procesos, hilos, sobresuscripcion)
+    muestreo = muestreo_efectivo(version, muestreo)
+    if campana_id and muestreo != "estandar":
+        raise ValueError("Las campanas de speedup solo admiten el muestreo estandar")
     config, datos, salida = Path(config).resolve(), Path(datos).resolve(), Path(salida).resolve()
     if salida.exists():
         raise ValueError(f"La salida ya existe: {salida}. Elija una carpeta nueva.")
-    comando = construir_comando(version, config, datos, salida, escenarios, procesos, hilos, sobresuscripcion)
+    comando = construir_comando(version, config, datos, salida, escenarios, procesos, hilos, sobresuscripcion,
+                                muestreo)
     entorno = dict(os.environ, OMP_DYNAMIC="FALSE", OMP_THREAD_LIMIT="4096", OMP_PROC_BIND="FALSE")
     contexto = capturar_contexto(datos, config, entorno)
     contexto["almacenamiento"] = str(salida.parent)
@@ -103,7 +131,7 @@ def ejecutar(version: str, config: Path | str, datos: Path | str, salida: Path |
              contexto=contexto, firma_contexto=firma(contexto),
              criterio=CRITERIO if version != "go" else "go_tiempo_total_v1",
              ejecucion={k: m[k] for k in ("version", "procesos", "hilos", "escenarios", "horizonte")},
-             comando=comando, segundos_externos=externo, sobresuscripcion=sobresuscripcion,
+             comando=comando, segundos_externos=externo, sobresuscripcion=sobresuscripcion, muestreo=muestreo,
              equivalencia_sha256=equivalencia,
              archivos_sha256={nombre: huella(salida / nombre) for nombre in PROTEGIDOS})
     guardar_json(salida / "procedencia.json", p)
