@@ -141,14 +141,21 @@ Ejecuta `simulador.exe` (Windows) o `simulador` (Linux/macOS), o bien la versió
 
 En la pestaña de simulación se elige el motor: C++ secuencial, OpenMP, MPI, híbrido, Go, **CUDA (GPU)** o **MPI + CUDA + OpenMP**. La casilla **«Muestreo rápido»** añade `--muestreo rapido` a los motores C++ de CPU; en los dos motores con GPU queda marcada y bloqueada (es su único modo) y en Go, desmarcada. Las ejecuciones con muestreo rápido o con GPU se muestran con un aviso: son estadísticamente equivalentes a las estándar, no idénticas, y no entran en las campañas de speedup de la pestaña S13.
 
-En Windows, la interfaz lanza OpenMP, MPI, híbrido, CUDA y MPI + CUDA dentro de WSL (distribución `Ubuntu`), así que esos ejecutables deben estar compilados ahí. Para los dos de GPU hace falta, además, el compilador `nvcc` (paquete `cuda-toolkit` del repositorio de NVIDIA para WSL-Ubuntu; la GPU la expone el controlador de Windows):
+En Windows, la interfaz lanza OpenMP, MPI, híbrido, CUDA y MPI + CUDA dentro de WSL (distribución `Ubuntu`), así que esos ejecutables deben estar compilados ahí. Secuencial y Go usan su `.exe` nativo (`simulador.exe`, `simulador_go.exe`) si está compilado; si no, también se lanzan por WSL con el binario de Linux (`make secuencial` y `go build -o simulador_go ./cmd/simulador` dentro de WSL). Para los dos de GPU hace falta, además, el compilador `nvcc` (paquete `cuda-toolkit` del repositorio de NVIDIA para WSL-Ubuntu; la GPU la expone el controlador de Windows):
 
 ```bash
 cd MonteCarlo_Paralelo
 make simulador_cuda simulador_mpi_cuda     # no forman parte de make all
 ```
 
-Esta compilación se probó en la imagen Docker `nvidia/cuda:12.6.3-devel-ubuntu24.04` (`docker/ejecutar_cuda.sh`), no en una distribución WSL. El lanzador equivalente por consola es `python3 MonteCarlo_Analisis/cli.py ejecutar --version cuda|mpi_cuda ...` y, para el muestreo, `--muestreo rapido`.
+Combinaciones probadas:
+
+| Entorno | Compilador de CUDA | Notas |
+|---|---|---|
+| Docker `nvidia/cuda:12.6.3-devel-ubuntu24.04` (`docker/ejecutar_cuda.sh`) | nvcc 12.6, g++ 13 | Sin ajustes |
+| WSL Ubuntu 26.04, controlador NVIDIA 582 | nvcc 13.0 (`cuda-nvcc-13-0`, `cuda-cudart-dev-13-0`), g++ 15 | Ver abajo |
+
+En Ubuntu 26.04 la versión de `nvcc` depende del controlador de Windows: las 13.2 y 13.3 compilan sin cambios, pero su código solo lo acepta un controlador más nuevo que el 582 (`the provided PTX was compiled with an unsupported toolchain`); las 12.9, 13.0 y 13.1 las acepta el controlador, pero sus cabeceras chocan con glibc reciente (`exception specification is incompatible` en `rsqrt`). Con el controlador 582 se usó la 13.0 añadiendo `noexcept (true)` a las declaraciones `extern` de `rsqrt` y `rsqrtf` en `/usr/local/cuda-13.0/targets/x86_64-linux/include/crt/math_functions.h`, que es lo que traen las versiones posteriores. Con un controlador actualizado basta instalar la 13.3. `nvcc` debe invocarse por su ruta real (`/usr/local/cuda/bin` en el `PATH` o un script envoltorio), no por un enlace simbólico, porque localiza sus cabeceras a partir de ella. El lanzador equivalente por consola es `python3 MonteCarlo_Analisis/cli.py ejecutar --version cuda|mpi_cuda ...` y, para el muestreo, `--muestreo rapido`.
 
 ### Resultado de la ejecución de referencia
 

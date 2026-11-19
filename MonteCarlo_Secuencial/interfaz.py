@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import csv
 import math
+import os
 import queue
 import subprocess
 import sys
@@ -78,6 +79,27 @@ def ruta_a_wsl(p: Path) -> str:
     if len(res) >= 2 and res[1] == ':':
         return f"/mnt/{res[0].lower()}{res[2:]}"
     return res
+
+
+# wsl.exe escribe sus propios mensajes en UTF-16; con WSL_UTF8=1 los entrega en UTF-8. Sin esto, un
+# error de WSL se leia como "N" (la primera letra seguida de un byte nulo).
+ENTORNO_WSL = dict(os.environ, WSL_UTF8="1")
+
+
+def explicar_error_wsl(detalle: str, comando: list[str]) -> str:
+    """Limpia el mensaje y, si el fallo es de WSL y no del simulador, dice que hacer."""
+    detalle = detalle.replace("\x00", "").strip()
+    if comando and comando[0] == "wsl":
+        distro = comando[2] if len(comando) > 2 else "Ubuntu"
+        if "WSL_E_DISTRO_NOT_FOUND" in detalle:
+            return (f"No existe la distribución WSL «{distro}» en este equipo.\n\n"
+                    "Los motores OpenMP, MPI, híbrido, CUDA y MPI + CUDA se ejecutan dentro de WSL. "
+                    f"Instálela con:  wsl --install -d {distro}\n"
+                    "y compile ahí los ejecutables (ver README, «Interfaz gráfica»).\n\n"
+                    "Distribuciones disponibles:  wsl -l -v")
+        if "python3" in detalle and ("not found" in detalle or "No such file" in detalle):
+            return f"Falta python3 en la distribución WSL «{distro}».\n\n{detalle}"
+    return detalle
 
 
 class InterfazMonteCarlo(tk.Tk):
@@ -614,7 +636,11 @@ class InterfazMonteCarlo(tk.Tk):
             messagebox.showerror("Recursos", "Ingrese procesos e hilos enteros positivos.")
             return
         salida = (GO_BASE if version == "go" else BASE) / salida_rel
-        usar_wsl = sys.platform == "win32" and version in {"openmp", "mpi", "hibrido", "cuda", "mpi_cuda"}
+        # En Windows, OpenMP, MPI, hibrido y las versiones con GPU siempre van por WSL. Secuencial y Go
+        # usan su .exe nativo si esta compilado; si no, tambien se lanzan por WSL con el binario de Linux.
+        nativo = GO_BASE / "simulador_go.exe" if version == "go" else BASE / "simulador.exe"
+        usar_wsl = sys.platform == "win32" and (version in {"openmp", "mpi", "hibrido", "cuda", "mpi_cuda"}
+                                                or not nativo.is_file())
         rapido = self.rapido_var.get() and version not in {"go", "cuda", "mpi_cuda"}
         ruta = ruta_a_wsl if usar_wsl else str
         datos = (GO_BASE if version == "go" else BASE) / "datos"
@@ -667,14 +693,14 @@ class InterfazMonteCarlo(tk.Tk):
     def _campana_hilo(self, comando: list[str], salida: Path) -> None:
         lineas = []
         try:
-            with subprocess.Popen(comando, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            with subprocess.Popen(comando, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=ENTORNO_WSL,
                                   text=True, encoding="utf-8", errors="replace", bufsize=1) as proceso:
                 for linea in proceso.stdout:
                     lineas.append(linea)
                     self.cola.put(("campana_log", linea.strip()))
                 codigo = proceso.wait()
             if codigo:
-                raise RuntimeError("".join(lineas[-30:]))
+                raise RuntimeError(explicar_error_wsl("".join(lineas[-30:]), comando))
             self.cola.put(("campana_fin", salida))
         except Exception as exc:
             self.cola.put(("error", f"Campaña: {exc}\nSalidas parciales, si existen: {salida}"))
@@ -682,11 +708,11 @@ class InterfazMonteCarlo(tk.Tk):
     def _ejecutar_hilo(self, comando: list[str], salida: Path, cwd: Path) -> None:
         try:
             salida.parent.mkdir(parents=True, exist_ok=True)
-            completado = subprocess.run(comando, cwd=cwd, capture_output=True, text=True,
+            completado = subprocess.run(comando, cwd=cwd, capture_output=True, text=True, env=ENTORNO_WSL,
                                        encoding="utf-8", errors="replace", check=False)
             if completado.returncode != 0:
                 det = completado.stderr.strip() or completado.stdout.strip() or "Error al ejecutar simulador"
-                self.cola.put(("error", det))
+                self.cola.put(("error", explicar_error_wsl(det, comando)))
             else:
                 self.cola.put(("completo", salida))
         except Exception as exc:
