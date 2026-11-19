@@ -37,8 +37,14 @@ COPY --chown=mpi:mpi MonteCarlo_Paralelo/src MonteCarlo_Paralelo/src
 COPY --chown=mpi:mpi MonteCarlo_Paralelo/scripts MonteCarlo_Paralelo/scripts
 COPY --chown=mpi:mpi MonteCarlo_Paralelo/Makefile MonteCarlo_Paralelo/hostfile MonteCarlo_Paralelo/
 
+# Nivel de optimizacion de la compilacion (por defecto -O2, el de las mediciones publicadas).
+# Para la corrida rapida: OPTIMIZACION="-O3 -march=native -ffp-contract=off" (ver docker-compose.yml).
+# -march=native ata el binario al procesador donde se construye la imagen; -ffp-contract=off evita
+# que el compilador fusione multiplicacion y suma (FMA), para no alterar el redondeo de los resultados.
+ARG OPTIMIZACION="-O2"
+
 USER mpi
-RUN make -C MonteCarlo_Paralelo all secuencial \
+RUN CXXFLAGS="-std=c++17 ${OPTIMIZACION} -Wall -Wextra -Wpedantic" make -C MonteCarlo_Paralelo all secuencial \
  && MonteCarlo_Secuencial/simulador --self-test --datos MonteCarlo_Secuencial/datos > /dev/null
 WORKDIR /home/mpi/proyecto/MonteCarlo_Paralelo
 

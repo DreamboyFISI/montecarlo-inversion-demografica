@@ -35,11 +35,18 @@ std::uint64_t mezclar_semilla(std::uint64_t x);
 // Binomial(n, p). No consume numeros aleatorios en los casos triviales n=0, p=0 o p=1.
 Conteo sorteo_binomial(Conteo n, double p, std::mt19937_64& generador);
 
+// Binomial(n, p) exacta con algoritmos de bajo costo (modo --muestreo rapido): inversion secuencial si
+// n*min(p,1-p) < 10 y rechazo transformado BTRS (Hormann, 1993) en otro caso. Misma distribucion que
+// sorteo_binomial, pero consume otra secuencia de numeros aleatorios: los resultados son
+// estadisticamente equivalentes, no identicos escenario a escenario.
+Conteo sorteo_binomial_rapido(Conteo n, double p, std::mt19937_64& generador);
+
 // Un anio completo:
 //   lambda = sum_{a=15..49} N[F][a] * f[a]
 //   B ~ Poisson(lambda);  B_F ~ Binomial(B, pF);  B_H = B - B_F
 //   D[s][a] ~ Binomial(N[s][a], q[s][a]);  S = N - D;  envejecer S un anio (99 y 100+ -> 100+)
 //   U[s] ~ Binomial(B_s, u[s]) pasan a edad 0
 // Verifica P(t+1) = P(t) + B - D y que no haya conteos negativos.
+// Con c.muestreo_rapido las binomiales se sortean con sorteo_binomial_rapido.
 PasoAnual simular_anio(const Poblacion& N, const Tasas& q, const TasaFecundidad& f, const Configuracion& c,
                        std::mt19937_64& generador);

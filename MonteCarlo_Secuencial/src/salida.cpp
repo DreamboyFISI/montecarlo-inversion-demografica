@@ -25,6 +25,9 @@ Argumentos leer_argumentos(int argc, char** argv, bool acepta_hilos) {
         else if (opcion == "--escenarios") {
             a.escenarios = leer_entero(valor);
             exigir(a.escenarios >= 1 && a.escenarios <= 1000000000LL, "Escenarios fuera de limites");
+        } else if (opcion == "--muestreo") {
+            exigir(valor == "rapido" || valor == "estandar", "--muestreo debe ser estandar o rapido");
+            a.muestreo_rapido = valor == "rapido";
         } else if (acepta_hilos && opcion == "--hilos") {
             const Conteo hilos = leer_entero(valor);
             exigir(hilos >= 1 && hilos <= 4096, "Hilos fuera de limites");
@@ -37,7 +40,7 @@ Argumentos leer_argumentos(int argc, char** argv, bool acepta_hilos) {
 
 void imprimir_ayuda(const std::string& programa, bool acepta_hilos) {
     std::cout << "Uso: " << programa << " --config config_demostracion.ini [--datos datos] [--salida resultados] "
-              << "[--escenarios N]" << (acepta_hilos ? " [--hilos P]" : "") << "\nPruebas: " << programa
+              << "[--escenarios N] [--muestreo estandar|rapido]" << (acepta_hilos ? " [--hilos P]" : "") << "\nPruebas: " << programa
               << " --self-test [--datos datos]\n";
 }
 
@@ -45,6 +48,7 @@ Configuracion configuracion_efectiva(const Argumentos& a) {
     exigir(!a.config.empty(), "Indique --config. Use --help para instrucciones.");
     Configuracion c = leer_configuracion(a.config);
     if (a.escenarios) c.escenarios = a.escenarios;
+    c.muestreo_rapido = a.muestreo_rapido;
     return c;
 }
 
@@ -59,6 +63,10 @@ void preparar_salida(const Argumentos& a, const Configuracion& c) {
       << "\nq100 desde configuracion; fila100 del CSV no aplicada"
          "\nDesagregacion uniforme entera; mortalidad constante en el tiempo"
          "\nBiblioteca C++: reproducibilidad exacta solo con mismo ejecutable/entorno\n";
+    // Solo se anota el modo no estandar: en modo estandar el archivo no cambia.
+    if (c.muestreo_rapido)
+        m << "muestreo=rapido (binomial por inversion/BTRS y corte en la primera inversion; "
+             "estadisticamente equivalente, no identico al muestreo estandar)\n";
 }
 
 void escribir_resultados(const fs::path& salida, const Configuracion& c, const Poblacion& N0,
@@ -92,7 +100,7 @@ void escribir_resultados(const fs::path& salida, const Configuracion& c, const P
     res << std::setprecision(12) << "ESTADO: " << c.estado_datos << "\n";
     if (c.estado_datos == "PARAMETROS_CONFIGURADOS")
         res << "Resultados de uso academico basados en los parametros configurados.\n";
-    res << "Version: " << version_texto << "\n"
+    res << "Version: " << version_texto << (c.muestreo_rapido ? " Muestreo rapido." : "") << "\n"
         << "Poblacion inicial: " << poblacion_total(N0) << "\nMenores de 15: " << menores_15(N0)
         << "\n65 o mas: " << mayores_65(N0) << "\nEscenarios completados: " << c.escenarios
         << "\nHorizonte: " << c.horizonte << "\nCon inversion: " << con_inversion

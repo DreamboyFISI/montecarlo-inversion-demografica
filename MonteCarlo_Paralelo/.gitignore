@@ -1,3 +1,7 @@
 simulador_omp
 simulador_mpi
 resultados_cluster/
+simulador_cuda
+gpu_cuda.o
+resultados_cuda/
+simulador_mpi_cuda

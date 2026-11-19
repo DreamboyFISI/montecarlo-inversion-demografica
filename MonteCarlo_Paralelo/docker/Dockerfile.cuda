@@ -1,0 +1,29 @@
+# Imagen para compilar y ejecutar las versiones CUDA (simulador_cuda) y MPI + CUDA (simulador_mpi_cuda)
+# y, para comparar en el mismo contenedor, las versiones secuencial y OpenMP.
+# Contexto de construccion: la raiz del repositorio.
+#   docker build -f MonteCarlo_Paralelo/docker/Dockerfile.cuda -t montecarlo-cuda .
+#   docker run --rm --gpus all montecarlo-cuda ./simulador_cuda --self-test --config ../MonteCarlo_Secuencial/config_incertidumbre.ini --datos ../MonteCarlo_Secuencial/datos
+# Requiere una GPU NVIDIA y que Docker pueda usarla (--gpus all): Docker Desktop con WSL 2 en Windows,
+# o NVIDIA Container Toolkit en Linux. La forma comoda de ejecutarla es docker/ejecutar_cuda.sh.
+FROM nvidia/cuda:12.6.3-devel-ubuntu24.04
+
+# mpirun dentro del contenedor: se ejecuta como root y sin CMA (ptrace restringido).
+ENV DEBIAN_FRONTEND=noninteractive \
+    OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
+    OMPI_MCA_btl_vader_single_copy_mechanism=none
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends g++ make openmpi-bin libopenmpi-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /proyecto
+COPY MonteCarlo_Secuencial/src MonteCarlo_Secuencial/src
+COPY MonteCarlo_Secuencial/datos MonteCarlo_Secuencial/datos
+COPY MonteCarlo_Secuencial/Makefile MonteCarlo_Secuencial/*.ini MonteCarlo_Secuencial/
+COPY MonteCarlo_Paralelo/src MonteCarlo_Paralelo/src
+COPY MonteCarlo_Paralelo/Makefile MonteCarlo_Paralelo/
+
+# Las pruebas del modelo (CPU) corren al construir; las de GPU necesitan la tarjeta y corren al ejecutar.
+RUN make -C MonteCarlo_Paralelo simulador_cuda simulador_mpi_cuda simulador_omp secuencial \
+ && MonteCarlo_Secuencial/simulador --self-test --datos MonteCarlo_Secuencial/datos > /dev/null
+WORKDIR /proyecto/MonteCarlo_Paralelo
+CMD ["./simulador_cuda", "--help"]

@@ -30,7 +30,7 @@ Proyecto del curso Programación Paralela y Concurrente. Abordamos la paraleliza
 | `MonteCarlo_Secuencial/src/modelo.*` | Núcleo: `simular_anio` (Poisson, binomiales, envejecimiento, balance) | S7 |
 | `MonteCarlo_Secuencial/src/escenario.*` | Un escenario completo (`simular_escenario`) y escritura ordenada de `escenarios.csv` / `factores_escenarios.csv`; lo comparten las tres versiones | S10 |
 | `MonteCarlo_Secuencial/src/salida.*` | Argumentos, carpeta de salida, distribución, resumen, SVG y métricas; lo comparten las tres versiones | S10 |
-| `MonteCarlo_Secuencial/src/pruebas.*` | 12 pruebas controladas con resultado conocido | S9 |
+| `MonteCarlo_Secuencial/src/pruebas.*` | 14 pruebas controladas con resultado conocido (12 del modelo y 2 del muestreo rápido) | S9 |
 | `MonteCarlo_Secuencial/src/grafico.hpp` | Histograma del año de inversión en SVG (`distribucion_anio.svg`) y en texto | S9 |
 | `MonteCarlo_Secuencial/src/metricas.hpp` | Tiempo de pared por fase, CPU, memoria pico, ms/escenario, escenarios/s → `metricas.csv` | S9 |
 | `MonteCarlo_Secuencial/src/main.cpp` | Bucle Monte Carlo secuencial | S7 |
@@ -67,7 +67,7 @@ No hace falta instalar compiladores. Desde la raíz del repositorio:
 docker build -f MonteCarlo_Paralelo/docker/Dockerfile -t montecarlo-demografia .
 ```
 
-La construcción compila el secuencial, OpenMP y MPI y corre las 12 pruebas controladas. Si alguna falla, la imagen no se construye.
+La construcción compila el secuencial, OpenMP y MPI y corre las 14 pruebas controladas. Si alguna falla, la imagen no se construye.
 
 ```bash
 # Verificar que OpenMP y MPI reproducen exactamente al secuencial
@@ -111,7 +111,7 @@ Equivale a `g++ -std=c++17 -O2 -Wall -Wextra -Wpedantic src/*.cpp -o simulador`.
 ./simulador --self-test --datos datos
 ```
 
-Deben aparecer las 12 pruebas con `[OK]` y la línea `Pruebas controladas: OK (12 de 12)`.
+Deben aparecer las 14 pruebas con `[OK]` y la línea `Pruebas controladas: OK (14 de 14)`.
 
 ### Simulación
 
@@ -256,6 +256,10 @@ docker compose up -d --build
 - **Error estándar de la media**: 0,00073 años (IC 95 %: 2054,5027–2054,5056);
 - **Sin inversión en el horizonte**: 65 230 de 10 000 000 (0,652 %);
 - **Memoria pico (RSS)**: 254 MiB (el proceso 0 reúne los 10⁷ resultados).
+
+Con el quinto argumento `rapido` (`./docker/ejecutar_cluster.sh 4 10000000 config_incertidumbre.ini 2 rapido`) la misma corrida tarda **383,7 s (6,4 min)**, y **243,1 s (4,1 min)** con 4 × 4 hilos y `-O3 -march=native` (`CPUS_POR_NODO=4 OPTIMIZACION="-O3 -march=native -ffp-contract=off" docker compose up -d --build`): el simulador recibe `--muestreo rapido`, que usa una binomial exacta de bajo costo (inversión/BTRS) y corta cada escenario en su primera inversión. El resultado es estadísticamente equivalente al estándar (media 2054,504, desviación 2,304, sin inversión 0,652 %), pero no idéntico byte a byte; el modo estándar sigue siendo el predeterminado. Detalle en `docs/04_sprint3_paralelizacion.md`, sección 9.1, y archivos en `MonteCarlo_Paralelo/resultados_10000000_rapido/`.
+
+**Versión CUDA (extra).** `simulador_cuda` ejecuta un hilo de GPU por escenario y completa los mismos 10 000 000 de escenarios en **158,2 s (2,6 min)** en una RTX 4050 Laptop (`./docker/ejecutar_cuda.sh 10000000`, desde `MonteCarlo_Paralelo/`). Usa otro generador (xoroshiro128++), así que es estadísticamente equivalente a las versiones de CPU, no idéntica. `simulador_mpi_cuda` combina MPI + CUDA + OpenMP (el proceso 0 en la GPU y los demás en la CPU, con reparto proporcional a la velocidad medida de cada uno) y baja a **123,1 s (2,1 min)** con `./docker/ejecutar_cuda.sh 10000000 config_incertidumbre.ini 4 5`. Detalle en `docs/04_sprint3_paralelizacion.md`, sección 10, y archivos en `MonteCarlo_Paralelo/resultados_10000000_cuda/` y `resultados_10000000_mpi_cuda/`.
 
 Los CSV por escenario de esta corrida (149 MB y 327 MB) no se versionan; el detalle está en `docs/04_sprint3_paralelizacion.md`, sección 9.
 

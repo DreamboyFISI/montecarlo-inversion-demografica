@@ -1,0 +1,51 @@
+ESTADO: PARAMETROS_CONFIGURADOS
+Resultados de uso academico basados en los parametros configurados.
+Version: C++17 + MPI + CUDA + OpenMP, 4 procesos: el 0 en GPU (NVIDIA GeForce RTX 4050 Laptop GPU, 71.7 % de los escenarios) y los demas en CPU con 5 hilos, generador xoroshiro128++. Muestreo rapido.
+Poblacion inicial: 32706028
+Menores de 15: 7429471
+65 o mas: 3440272
+Escenarios completados: 10000000
+Horizonte: 40
+Con inversion: 9935517
+Sin inversion: 64483
+Probabilidad de inversion: 0.9935517
+Probabilidad sin inversion: 0.0064483
+Primer anio de inversion (escenarios con inversion): minimo 2043, media 2054.50426314, maximo 2065
+Segundos simulacion y escritura de escenarios: 123.118503589
+Segundos hasta resumen: 124.012898553
+--- Metricas de rendimiento (MPI + CUDA + OpenMP, Tp) ---
+Procesos x hilos: 4 x 5
+Segundos carga de datos: 0.883076
+Segundos simulacion y escritura de escenarios: 123.118504
+Segundos hasta resumen (Tp total): 124.012899
+Segundos de CPU del proceso: 1178.409273
+Milisegundos por escenario: 0.012312
+Escenarios por segundo: 81222.559636
+Escenario-anios por segundo: 3248902.385423
+Memoria pico (MiB): 490.253906
+Segundos de espera + comunicacion (MPI_Gatherv): 15.940769
+--- Distribucion del primer anio de inversion p(T = y) ---
+2043         1  0.0000  
+2044         5  0.0000  
+2045        44  0.0000  
+2046       407  0.0000  
+2047      2597  0.0003  
+2048     13261  0.0013  
+2049     55075  0.0055  #
+2050    177165  0.0177  ####
+2051    533759  0.0534  ############
+2052   1063353  0.1063  #######################
+2053   1579771  0.1580  ###################################
+2054   1811553  0.1812  ########################################
+2055   1660570  0.1661  #####################################
+2056   1285675  0.1286  ############################
+2057    804298  0.0804  ##################
+2058    457942  0.0458  ##########
+2059    248714  0.0249  #####
+2060    132851  0.0133  ###
+2061     44576  0.0045  #
+2062     27315  0.0027  #
+2063     17728  0.0018  
+2064     11427  0.0011  
+2065      7430  0.0007  
+Media 2054.50, desviacion 2.30 anios, rango 2043-2065; sin inversion: 64483 de 10000000 (0.64 %)

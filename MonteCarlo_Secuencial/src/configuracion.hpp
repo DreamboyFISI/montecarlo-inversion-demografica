@@ -23,6 +23,9 @@ struct Configuracion {
     // y se multiplican f(a,y) y q(a,s) por ellos durante los 40 anios.
     double sigma_fecundidad = 0.0;
     double sigma_mortalidad = 0.0;
+    // Muestreo rapido (opcion --muestreo rapido; no se lee del .ini). false = muestreo estandar de la
+    // biblioteca C++, que reproduce byte a byte los resultados publicados. Ver sorteo_binomial_rapido.
+    bool muestreo_rapido = false;
     std::filesystem::path archivo;  // ruta del .ini leido
 };
 

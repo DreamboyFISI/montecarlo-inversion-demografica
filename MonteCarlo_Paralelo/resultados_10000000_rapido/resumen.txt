@@ -1,0 +1,51 @@
+ESTADO: PARAMETROS_CONFIGURADOS
+Resultados de uso academico basados en los parametros configurados.
+Version: C++17 + Hibrido (MPI + OpenMP), 4 procesos x 2 hilos. Muestreo rapido.
+Poblacion inicial: 32706028
+Menores de 15: 7429471
+65 o mas: 3440272
+Escenarios completados: 10000000
+Horizonte: 40
+Con inversion: 9934828
+Sin inversion: 65172
+Probabilidad de inversion: 0.9934828
+Probabilidad sin inversion: 0.0065172
+Primer anio de inversion (escenarios con inversion): minimo 2043, media 2054.50413716, maximo 2065
+Segundos simulacion y escritura de escenarios: 383.671758603
+Segundos hasta resumen: 383.687285796
+--- Metricas de rendimiento (Hibrido MPI+OpenMP, Tp) ---
+Procesos x hilos: 4 x 2
+Segundos carga de datos: 0.000298
+Segundos simulacion y escritura de escenarios: 383.671759
+Segundos hasta resumen (Tp total): 383.687286
+Segundos de CPU del proceso: 2763.822700
+Milisegundos por escenario: 0.038367
+Escenarios por segundo: 26063.946005
+Escenario-anios por segundo: 1042557.840213
+Memoria pico (MiB): 253.714844
+Segundos de espera + comunicacion (MPI_Gatherv): 5.475407
+--- Distribucion del primer anio de inversion p(T = y) ---
+2043         1  0.0000  
+2044         5  0.0000  
+2045        56  0.0000  
+2046       382  0.0000  
+2047      2514  0.0003  
+2048     13584  0.0014  
+2049     54788  0.0055  #
+2050    176866  0.0177  ####
+2051    533031  0.0533  ############
+2052   1063192  0.1063  #######################
+2053   1581391  0.1581  ###################################
+2054   1811364  0.1811  ########################################
+2055   1661991  0.1662  #####################################
+2056   1285882  0.1286  ############################
+2057    802391  0.0802  ##################
+2058    457111  0.0457  ##########
+2059    248515  0.0249  #####
+2060    132652  0.0133  ###
+2061     44908  0.0045  #
+2062     27433  0.0027  #
+2063     17586  0.0018  
+2064     11477  0.0011  
+2065      7708  0.0008  
+Media 2054.50, desviacion 2.30 anios, rango 2043-2065; sin inversion: 65172 de 10000000 (0.65 %)

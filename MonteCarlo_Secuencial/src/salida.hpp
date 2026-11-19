@@ -17,6 +17,7 @@ struct Argumentos {
     std::filesystem::path salida = "resultados";
     Conteo escenarios = 0;  // 0 = usar el valor del .ini
     int hilos = 0;          // solo OpenMP; 0 = valor por defecto (OMP_NUM_THREADS o nucleos)
+    bool muestreo_rapido = false;  // --muestreo rapido
     bool pruebas = false;
     bool ayuda = false;
 };

@@ -1,0 +1,2 @@
+version,procesos,hilos,escenarios,horizonte,segundos_carga,segundos_simulacion,segundos_total,segundos_cpu,ms_por_escenario,escenarios_por_segundo,escenario_anios_por_segundo,memoria_pico_mib,segundos_comunicacion
+mpi_cuda,4,5,10000000,40,0.883076443,123.118504,124.012899,1178.40927,0.0123118504,81222.5596,3248902.39,490.253906,15.9407686

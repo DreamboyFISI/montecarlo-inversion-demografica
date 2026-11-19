@@ -2,10 +2,12 @@
 // Pruebas controladas con resultado conocido. Se ejecutan con: ./simulador --self-test [--datos datos]
 #include "pruebas.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "modelo.hpp"
 
@@ -101,6 +103,56 @@ void ejecutar_pruebas(const std::filesystem::path& carpeta_datos) {
     comprobar(pa.poblacion == pb.poblacion && pa.nacimientos == pb.nacimientos &&
                   poblacion_total(pa.poblacion) == poblacion_total(N0) + pa.nacimientos - pa.defunciones,
               "P12 balance exacto y reproducibilidad con la misma semilla");
+
+    // --- P13-P14: muestreo rapido (inversion y BTRS) frente a la binomial exacta -------------
+    {
+        std::mt19937_64 g3(1), g4(1);
+        sorteo_binomial_rapido(0, 0.3, g3);
+        sorteo_binomial_rapido(100, 0.0, g3);
+        sorteo_binomial_rapido(100, 1.0, g3);
+        bool ok = g3() == g4();
+        // Ji-cuadrado contra la funcion de masa exacta; se agrupan las colas con esperado < 10.
+        const int M = 400000;
+        const struct { Conteo n; double p; } casos[] = {{30, 0.2}, {60, 0.3}, {400, 0.9}, {250000, 0.004}, {5000, 0.35}};
+        for (const auto& caso : casos) {
+            const double media = double(caso.n) * caso.p, desv = std::sqrt(media * (1 - caso.p));
+            const Conteo lo = std::max<Conteo>(0, Conteo(media - 8 * desv)),
+                         hi = std::min<Conteo>(caso.n, Conteo(media + 8 * desv) + 1);
+            std::vector<double> observado(std::size_t(hi - lo + 1), 0.0);
+            for (int i = 0; i < M; ++i) {
+                const Conteo x = sorteo_binomial_rapido(caso.n, caso.p, g3);
+                ok = ok && x >= 0 && x <= caso.n;
+                ++observado[std::size_t(std::clamp(x, lo, hi) - lo)];
+            }
+            double ji = 0, esperado_grupo = 0, observado_grupo = 0, masa = 0;
+            int grupos = 0;
+            for (Conteo k = lo; k <= hi; ++k) {
+                const double log_pmf = std::lgamma(double(caso.n) + 1) - std::lgamma(double(k) + 1) -
+                                       std::lgamma(double(caso.n - k) + 1) + double(k) * std::log(caso.p) +
+                                       double(caso.n - k) * std::log1p(-caso.p);
+                esperado_grupo += M * std::exp(log_pmf);
+                masa += std::exp(log_pmf);
+                observado_grupo += observado[std::size_t(k - lo)];
+                if (esperado_grupo >= 10) {
+                    ji += (observado_grupo - esperado_grupo) * (observado_grupo - esperado_grupo) / esperado_grupo;
+                    esperado_grupo = observado_grupo = 0;
+                    ++grupos;
+                }
+            }
+            // Umbral: media + 6 desviaciones de una ji-cuadrado con `grupos` grados de libertad.
+            ok = ok && masa > 0.999999 && ji < grupos + 6 * std::sqrt(2.0 * grupos);
+        }
+        comprobar(ok, "P13 binomial rapida: casos triviales, rango y ji-cuadrado contra la masa exacta (5 casos)");
+
+        Configuracion cr = c;
+        cr.muestreo_rapido = true;
+        std::mt19937_64 ra(mezclar_semilla(12345)), rb(mezclar_semilla(12345));
+        const auto qa = simular_anio(N0, qr, f[0], cr, ra);
+        const auto qb = simular_anio(N0, qr, f[0], cr, rb);
+        comprobar(qa.poblacion == qb.poblacion &&
+                      poblacion_total(qa.poblacion) == poblacion_total(N0) + qa.nacimientos - qa.defunciones,
+                  "P14 muestreo rapido: balance exacto y reproducibilidad con la misma semilla");
+    }
 
     std::cout << "Pruebas controladas: OK (" << aprobadas << " de " << aprobadas << ")\n";
 }

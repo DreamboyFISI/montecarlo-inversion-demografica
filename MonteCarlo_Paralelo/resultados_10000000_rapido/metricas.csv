@@ -1,0 +1,2 @@
+version,procesos,hilos,escenarios,horizonte,segundos_carga,segundos_simulacion,segundos_total,segundos_cpu,ms_por_escenario,escenarios_por_segundo,escenario_anios_por_segundo,memoria_pico_mib,segundos_comunicacion
+hibrido,4,2,10000000,40,0.000298177,383.671759,383.687286,2763.8227,0.0383671759,26063.946,1042557.84,253.714844,5.47540718

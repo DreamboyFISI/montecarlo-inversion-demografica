@@ -12,6 +12,11 @@ using Conteo = long long;  // conteos enteros de personas, nacimientos y defunci
 inline void exigir(bool condicion, const std::string& mensaje) {
     if (!condicion) throw std::runtime_error(mensaje);
 }
+// Variante para mensajes literales: no construye un std::string cuando la condicion se cumple
+// (importa en los controles que se repiten en cada anio de cada escenario).
+inline void exigir(bool condicion, const char* mensaje) {
+    if (!condicion) throw std::runtime_error(mensaje);
+}
 
 // Quita espacios, tabuladores y saltos de linea al inicio y al final.
 inline std::string recortar(const std::string& texto) {

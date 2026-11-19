@@ -49,12 +49,16 @@ ResultadoEscenario simular_escenario(Conteo r, const DatosModelo& d, const Confi
         fecundidad_r = &fecundidad_esc;
     }
 
+    // Con muestreo rapido el escenario termina en su primera inversion (el resultado no depende de los
+    // anios posteriores), salvo el que escribe la trayectoria completa.
+    const bool corte_anticipado = c.muestreo_rapido && !trayectoria;
     for (int t = 0; t < c.horizonte; ++t) {
+        if (corte_anticipado && e.primer_paso >= 0) break;
         const Conteo antes = poblacion_total(N);
         const PasoAnual paso = simular_anio(N, *q_r, (*fecundidad_r)[t], c, generador);
         N = paso.poblacion;
         if (e.primer_paso < 0 && hay_inversion(N)) e.primer_paso = t + 1;
-        // Se completa el horizonte aunque ya haya inversion: misma carga por escenario.
+        // Muestreo estandar: se completa el horizonte aunque ya haya inversion (misma carga por escenario).
 
         if (trayectoria)
             *trayectoria << c.anio_base + t + 1 << ',' << antes << ',' << paso.nacimientos << ','

@@ -2,11 +2,14 @@
 #   docker compose up -d --build                    # construye la imagen y levanta los 4 nodos
 #   ./docker/ejecutar_cluster.sh 8 10000            # mpirun -np 8 sobre los 4 nodos
 #   docker compose down
+# Variables opcionales (por defecto, la configuracion de las mediciones publicadas: 2 CPU y -O2):
+#   CPUS_POR_NODO=4 OPTIMIZACION="-O3 -march=native -ffp-contract=off" docker compose up -d --build
+#   ./docker/ejecutar_cluster.sh 4 10000000 config_incertidumbre.ini 4 rapido   # 4 nodos x 4 hilos
 # Cada nodo es un contenedor con 2 CPU; nodo1 es el maestro (lanza mpirun y escribe los resultados
 # en ./resultados_cluster del anfitrion).
 x-nodo: &nodo
   image: montecarlo-demografia:latest
-  cpus: 2
+  cpus: ${CPUS_POR_NODO:-2}
   networks: [cluster]
 
 services:
@@ -15,6 +18,8 @@ services:
     build:
       context: ..
       dockerfile: MonteCarlo_Paralelo/docker/Dockerfile
+      args:
+        OPTIMIZACION: ${OPTIMIZACION:--O2}
     hostname: nodo1
     volumes:
       - ./resultados_cluster:/home/mpi/resultados:z
