@@ -1,0 +1,25 @@
+name: Analisis S13
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11", "3.14"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Pruebas numericas y comparabilidad (sin GUI ni compiladores)
+        env:
+          PYTHONIOENCODING: utf-8
+        run: python -m unittest discover -s tests -v

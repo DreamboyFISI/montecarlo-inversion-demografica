@@ -17,6 +17,7 @@ Proyecto del curso Programación Paralela y Concurrente. Abordamos la paraleliza
 9. [Versión Go](#versión-go)
 10. [Clustering de escenarios (S11–S12)](#clustering-de-escenarios-s11s12)
 11. [Documentación Scrum](#documentación-scrum)
+12. [Análisis de resultados y rendimiento (S13)](#análisis-de-resultados-y-rendimiento-s13)
 
 ## Estructura del repositorio
 
@@ -56,6 +57,7 @@ Proyecto del curso Programación Paralela y Concurrente. Abordamos la paraleliza
 | `MonteCarlo_Paralelo/resultados_10000000/` | Resumen, distribución, gráfico y métricas de la corrida de 10 millones de escenarios | S12 |
 | `MonteCarlo_Go/` | Implementación secuencial alternativa en Go | extra |
 | `MonteCarlo_Clustering/` | Segmentación de escenarios (K-Means, Ward, DBSCAN) y perfiles de edad con métricas y gráficos | S11–S12 |
+| `MonteCarlo_Analisis/` | Análisis dinámico de cada ejecución, campañas C++ comparables, procedencia e informes exportables | S13 |
 
 ## Inicio rápido con Docker
 
@@ -356,4 +358,37 @@ python3 MonteCarlo_Clustering/scripts/clustering_edades.py \
 | `docs/04_sprint3_paralelizacion.md`: análisis de Foster, OpenMP, MPI, Docker, verificación, rendimiento y ejecución de 10 millones de escenarios | S10–S12 |
 | `docs/05_registro_scrum.md`: Sprint Planning y Review de los sprints 1–3 | S4–S12 |
 | `docs/06_clustering.md`: clustering de escenarios (K-Means, Hierarchical, DBSCAN), perfiles de edad, análisis de sensibilidad y estabilidad | S11–S12 |
+| `docs/07_analisis_s13.md`: metodología estadística, comparabilidad, campañas e interfaz de análisis | S13 |
 | `docs/cronograma.png`: cronograma Scrum del proyecto; se regenera con `python docs/generar_cronograma.py` | S4–S15 |
+
+## Análisis de resultados y rendimiento (S13)
+
+La pestaña **«4. Análisis S13»** de `python interfaz.py` analiza la ejecución que se acaba
+de completar o cargar. Presenta probabilidades, cuantiles, error Monte Carlo, intervalos
+y límites del modelo; permite exportar Markdown, CSV, JSON y PNG.
+
+La comparación de rendimiento se hace con una **campaña separada**, en el mismo equipo
+y entorno, con T1 secuencial, repeticiones y comprobación de resultados equivalentes.
+Incluye OpenMP, MPI e híbrido, con speedup, eficiencia, costo, Karp–Flatt y Amdahl.
+No usa tiempos fijos de otras computadoras. Las salidas históricas sin procedencia
+se analizan de forma descriptiva, sin inventar un speedup.
+
+Desde la raíz, dentro de WSL/Linux y con los C++ compilados:
+
+```bash
+# Leer los resultados guardados de S12, sin volver a simular 10 millones
+python -m MonteCarlo_Analisis analizar MonteCarlo_Paralelo/resultados_10000000 \
+    --salida salidas_s13/mi_informe_10m
+
+# Campaña pequeña; aumentar R y ajustar trabajadores para la medición final
+python -m MonteCarlo_Analisis campana --escenarios 1000 --repeticiones 3 \
+    --p 1 2 --hibridos 1x2 --salida salidas_s13/mi_campana
+
+# Pruebas sin dependencias gráficas
+python -m unittest discover -s tests -v
+```
+
+Las carpetas de salida deben ser nuevas. Las campañas locales en `salidas_s13/`
+no se suben automáticamente a Git. Python 3.10+; Matplotlib solo para gráficos/interfaz.
+Consulte [la metodología y los límites](docs/07_analisis_s13.md), especialmente las
+diferencias entre dispersión, IC de la media, CPU/pared y speedup.
